@@ -1,0 +1,52 @@
+# Local development infrastructure only. Not used for deployment.
+# Usage: cp .env.example .env && docker compose up -d
+
+name: attendra
+
+services:
+  postgres:
+    # Postgres 17 with pgvector preinstalled. btree_gist and citext ship with Postgres.
+    image: pgvector/pgvector:pg17
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-attendra}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-attendra}
+      POSTGRES_DB: ${POSTGRES_DB:-attendra}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+      - ./infra/postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-attendra} -d ${POSTGRES_DB:-attendra}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    # noeviction is required by BullMQ. In production, cache and queues use
+    # separate Redis instances with different eviction policies (BACKEND.md §9).
+    command: ["redis-server", "--appendonly", "yes", "--maxmemory-policy", "noeviction"]
+    ports:
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  mailpit:
+    # Catches all outgoing email in development. UI: http://localhost:8025
+    image: axllent/mailpit:v1.21
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+volumes:
+  postgres-data:
+  redis-data:
