@@ -2,7 +2,7 @@
   "name": "@attendra/server",
   "version": "0.0.0",
   "private": true,
-  "description": "Backend modules, kernel and composition roots shared by the api, worker and media apps (BACKEND.md §2)",
+  "description": "Backend modules, kernel and composition roots shared by the api, worker and media apps (BACKEND.md \u00a72)",
   "exports": {
     "./*": {
       "types": "./dist/*.d.ts",

@@ -10,8 +10,8 @@
   "scripts": {
     "dev": "turbo run dev --filter=@attendra/api... --filter=@attendra/worker...",
     "build": "turbo run build",
-    "lint": "eslint . --max-warnings=0",
-    "lint:fix": "eslint . --fix",
+    "lint": "turbo run build --filter='./packages/*' --output-logs=errors-only && eslint . --max-warnings=0",
+    "lint:fix": "turbo run build --filter='./packages/*' --output-logs=errors-only && eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "typecheck": "turbo run typecheck && tsc --noEmit -p tsconfig.json",
