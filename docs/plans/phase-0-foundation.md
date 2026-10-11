@@ -91,9 +91,9 @@ are merged in order; each one is a reviewable PR.
 - Conventional Commits check on PR titles; PR template referencing requirement ids.
 
 **Done when**
-- [ ] `pnpm i && pnpm lint && pnpm typecheck && pnpm test` pass locally and in CI.
-- [ ] A deliberate cross-feature deep import fails lint.
-- [ ] `docker compose up -d` + `pnpm db:migrate` work from a clean clone following README.
+- [x] `pnpm i && pnpm lint && pnpm typecheck && pnpm test` pass locally and in CI.
+- [x] A deliberate cross-feature deep import fails lint.
+- [x] `docker compose up -d` + `pnpm db:migrate` work from a clean clone following README.
 
 ### A1 · Backend kernel
 
@@ -354,7 +354,7 @@ Plus visual checks (light/dark, one RTL locale) and axe accessibility checks on 
 
 | Milestone | Status |
 |---|---|
-| A0 Repository and tooling | ☐ |
+| A0 Repository and tooling | ✅ |
 | A1 Backend kernel | ☐ |
 | A2 Database foundation | ☐ |
 | A3 Platform modules | ☐ |
