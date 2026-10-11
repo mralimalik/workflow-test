@@ -134,6 +134,8 @@ Merged over the plan's entitlements by `EntitlementsService`. **[base] [tenant]*
 | `tax_ids` | jsonb | no | `'[]'` | `[{ type, value }]` |
 | `default_payment_method_summary` | jsonb | no | `'{}'` | display only |
 | `currency` | char(3) | no | | fixed after first subscription (Stripe rule) |
+| `overage_spend_cap_minor` | bigint | yes | | organization-chosen monthly overage limit; null = no cap ([voice minute limits](../features/billing-and-plans.md#voice-minute-metering-and-limits)) |
+| `usage_alert_thresholds_bps` | integer[] | no | `'{8000,10000}'` | alert at 80% / 100% of allowance |
 
 ## subscriptions
 

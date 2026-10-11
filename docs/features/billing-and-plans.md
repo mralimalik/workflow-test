@@ -61,6 +61,51 @@ Example (illustrative): Starter $99/location/month incl. 300 min; Growth $249 in
 9. Enterprise: custom prices (private `plan_prices`), entitlement overrides, invoices
    with bank transfer (Stripe `send_invoice`).
 
+## Voice minute metering and limits
+
+How AI minutes are measured and what happens when an allowance runs out, including with
+several calls in progress at once.
+
+1. **What is metered:** AI-handled audio time per media session (`media_sessions` with
+   the agent connected), from answer to hang-up or transfer. Time after a transfer to a
+   human is telephony-only, not AI minutes. Measured in seconds and reported to Stripe as
+   decimal minutes (e.g. 3.25), so customers are not charged for rounding.
+2. **Allowance is pooled** per organization per billing period:
+   `included_quantity × billable locations`. Any location's calls draw from the same pool.
+3. **Live tracking:** the media gateway increments a Redis counter
+   `att:{env}:usage:{orgId}:{period}:ai_voice_seconds` every 10 s for each active
+   session (heartbeat). At session end the exact duration is written to
+   `usage_records`, and the counter is reconciled from Postgres hourly. Redis gives
+   real-time balance checks; Postgres is the billing truth.
+4. **Default: overage on, calls never cut.** When the allowance is used up, calls keep
+   working and the extra minutes are billed as overage on the next invoice. In the
+   "5 minutes left, two callers, and a third joins with 10 seconds left" case, all three
+   calls are answered and continue normally. Usage beyond the pool is overage at the plan
+   rate. Owners are alerted at 80% and 100% of the allowance.
+5. **When a limit applies** (a plan without overage such as the trial, a plan
+   `hard_cap_quantity`, or the organization's own spending cap
+   `billing_customers.overage_spend_cap_minor`):
+   - **Admission control at call start:** a new call is accepted only if the remaining
+     balance is above a small reserve (default 60 s). Otherwise it goes to the endpoint
+     `fallback` (forward to the business's number, voicemail or message), and the
+     conversation is logged with `end_reason = usage_limit`.
+   - **Calls already in progress are never dropped mid-sentence.** When the balance hits
+     zero, each active call gets a wrap-up window (default 90 s, setting): the agent
+     finishes the current task (e.g. confirms the booking it is holding), says it will
+     have someone follow up if needed, and ends politely. The overrun is capped at
+     wrap-up × concurrent calls, which is bounded by the `concurrentVoiceSessions`
+     entitlement.
+   - Overrun seconds during wrap-up are recorded. Under a hard cap they are absorbed
+     (not billed); under a spending cap they count toward the next period's usage
+     report as normal overage up to the cap.
+6. **Concurrency** is a separate entitlement (`rateLimits.concurrentVoiceSessions`).
+   It limits simultaneous calls regardless of remaining minutes; calls above it go to the
+   fallback.
+7. Text conversations (widget chat, WhatsApp) are metered separately
+   (`ai_text_messages`, `whatsapp_conversations`) with the same pooling and limit rules.
+8. **Later:** prepaid minute packs (top-ups) as one-time Stripe charges that add to the
+   current period's pool.
+
 ## Access states
 
 Driven by `subscriptions.status` and `past_due_since` (dunning ladder) → `organizations.status`:

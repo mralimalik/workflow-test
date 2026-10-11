@@ -560,6 +560,7 @@ reachable; media also checks provider reachability). Used by load balancers.
 | `model-profile` | scope type + id + modality | Resolved model profile id (assignment resolution) | 1 h | `model_profile.*`, `profile_assignment.*` |
 | `catalog-public` | location id + locale | Public service list / menu for booking pages and widget | 15 min | `catalog.changed`, `menu.changed`, `location_product.availability_changed` |
 | `avail` | location id + service/party + date + avail version | Computed free slots (display only) | 60 s | bump `ver:avail:{locationId}` on `booking.*`, `schedule.changed`, `external_busy.changed` |
+| `usage` (counter, not a cache) | organization id + period + meter | Live usage counter for admission control ([billing](docs/features/billing-and-plans.md#voice-minute-metering-and-limits)) | period end + 7 d | reconciled hourly from `usage_records` |
 | `feature-flags` | (global) | Flags + overrides | 5 min | `feature_flag.*` |
 | `fx`/reference | static | Currency metadata, locale data | 24 h | deploy |
 

@@ -101,7 +101,7 @@ One interaction on one channel from start to end. **[base] [tenant]**
 | `locale` | text | yes | | detected/selected language |
 | `started_at` | timestamptz | no | `now()` | |
 | `ended_at` | timestamptz | yes | | |
-| `end_reason` | text | yes | | `completed` \| `customer_hung_up` \| `agent_ended` \| `transferred` \| `timeout` \| `error` \| `max_duration` |
+| `end_reason` | text | yes | | `completed` \| `customer_hung_up` \| `agent_ended` \| `transferred` \| `timeout` \| `error` \| `max_duration` \| `usage_limit` |
 | `intent` | text | yes | | `book` \| `reschedule` \| `cancel` \| `order` \| `reserve` \| `inquiry` \| `complaint` \| `other` (classified post-conversation) |
 | `outcome` | text | yes | | `booking_created` \| `booking_changed` \| `booking_cancelled` \| `order_placed` \| `information_provided` \| `handed_off` \| `callback_scheduled` \| `abandoned` \| `no_action` |
 | `ai_resolved` | boolean | yes | | true if resolved without a human (containment) |
