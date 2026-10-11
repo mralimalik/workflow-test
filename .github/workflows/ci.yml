@@ -45,11 +45,11 @@ jobs:
           --health-interval 5s --health-timeout 5s --health-retries 10
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: pnpm
@@ -62,8 +62,9 @@ jobs:
           PGPASSWORD: attendra
         run: |
           psql -h localhost -U attendra -d attendra -v ON_ERROR_STOP=1 -f infra/postgres/init/001-extensions.sql
-          # Services cannot take a command; BullMQ requires noeviction.
-          redis-cli -h localhost CONFIG SET maxmemory-policy noeviction
+          # Service containers cannot take a command, and the runner has no redis-cli:
+          # configure noeviction (required by BullMQ) inside the service container.
+          docker exec ${{ job.services.redis.id }} redis-cli CONFIG SET maxmemory-policy noeviction
 
       - name: Format
         run: pnpm format:check
@@ -94,18 +95,18 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
       - name: Gitleaks
         run: |
-          docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.28.0 \
+          docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.30.1 \
             git /repo --redact --verbose --exit-code 1
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version-file: .nvmrc
           cache: pnpm
