@@ -115,6 +115,7 @@ with limited scope (can create an organization, cannot invite until verified).
 | POST | `/auth/{realm}/token` · `/token/refresh` | user, customer | Mobile token flow (Phase 4) |
 | GET | `/auth/users/oauth/google/start` · `/callback` | user | Google sign-in (Phase 2) |
 | POST | `/me/contact/change/start` · `/verify` | customer | Change phone/email |
+| GET · PATCH | `/me/account` | user | Own profile: name, locale, timezone, avatar |
 
 ## Events and jobs
 

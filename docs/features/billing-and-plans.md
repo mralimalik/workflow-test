@@ -106,6 +106,32 @@ several calls in progress at once.
 8. **Later:** prepaid minute packs (top-ups) as one-time Stripe charges that add to the
    current period's pool.
 
+## Overage billing and credit risk
+
+Overage is billed **in arrears**; the base subscription is billed **in advance**. Controls
+that keep unpaid overage small and bounded:
+
+1. **Monthly overage on every plan.** Annual plans pay the base fee yearly, but usage is
+   billed monthly through a separate monthly usage subscription item, so a year of
+   overage never accumulates on one invoice.
+2. **Early charge threshold.** When unbilled overage reaches a threshold (default $100,
+   per currency), Stripe billing thresholds invoice and charge it immediately, mid-period.
+3. **Risk-tiered overage caps.** New organizations get a default overage cap (e.g. $50 per
+   period) that rises automatically after consecutive on-time payments (e.g. 3 invoices),
+   or manually by admins (entitlement override). The organization can always set a lower
+   cap themselves.
+4. **Trials have no overage.** Trial usage is hard-capped at the trial allowance; a valid
+   card is required to convert.
+5. **Payment failure stops overage immediately.** While an invoice is past due, the
+   organization is limited to its remaining included minutes (overage cap treated as 0);
+   new usage beyond that goes to fallback.
+6. **Card checks at signup/checkout:** Stripe card verification and Radar fraud rules.
+7. **Dunning** per the access states below; unpaid after the ladder → written off and
+   the organization closed; repeat sign-ups with the same payment fingerprint or owner
+   identity are flagged for review.
+
+Worst case per new organization ≈ one period's capped overage.
+
 ## Access states
 
 Driven by `subscriptions.status` and `past_due_since` (dunning ladder) → `organizations.status`:

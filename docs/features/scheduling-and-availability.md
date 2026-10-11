@@ -108,6 +108,7 @@ COMMIT
 | PUT | `{L}/schedules/{id}/intervals` | `resources.manage` or `schedules.manage_own` |
 | GET · POST · PATCH · DELETE | `{L}/schedules/{id}/exceptions[/{exceptionId}]` | `resources.manage` or `schedules.manage_own` |
 | POST | `/orgs/{orgId}/holidays/apply` | `resources.manage` (bulk exceptions to many locations) |
+| GET | `{L}/opening-hours/effective?from=&to=` | `locations.read` (resolved local open intervals per date, DST-correct) |
 | GET | `{L}/availability` | `bookings.read` |
 | GET | `/public/locations/{locationId}/availability` | public (rate limited, cached) |
 

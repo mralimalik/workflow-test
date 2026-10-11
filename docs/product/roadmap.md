@@ -19,7 +19,8 @@ Future   Lodging               → hotel stays (possibly a separate product)
 
 ## Phase 0 — Foundation
 
-**Goal:** the platform skeleton every later feature plugs into.
+**Goal:** the platform skeleton every later feature plugs into. Detailed plan:
+[plans/phase-0-foundation.md](../plans/phase-0-foundation.md).
 
 | Area | Deliverables |
 |---|---|
@@ -29,6 +30,8 @@ Future   Lodging               → hotel stays (possibly a separate product)
 | Cross-cutting | Audit log, transactional outbox + relay, idempotency keys, inbound webhook store, files, feature flags, Redis cache module, rate limiting |
 | Auth | User signup/login/reset/verify, platform admin login with 2FA, sessions in cookies, revoke/ban |
 | Tenancy | Organizations, locations, location capabilities, settings inheritance, memberships, invitations, system roles, permission guard |
+| Hours | Schedules for location opening hours: weekly intervals, exceptions, bulk holidays, effective-hours resolution |
+| Supporting | Plans seeded + local entitlements (no Stripe yet), email notifications for auth/invitations, real-time gateway, platform admin basics |
 | Frontend | `packages/ui`, `packages/api-client`, dashboard shell (auth, org/location switcher, layout), admin shell |
 
 **Exit criteria:** an owner can sign up, create an organization with two locations, invite
@@ -42,7 +45,7 @@ correctly — tested from the dashboard, before any telephony.
 
 | Area | Deliverables |
 |---|---|
-| Scheduling | Schedules, staff members, resources, resource groups, availability engine, holds, exclusion constraints |
+| Scheduling | Staff members, resources, resource groups, staff availability schedules, availability engine, holds, exclusion constraints |
 | Catalogue | Service categories, services, variants, location overrides, resource rules, policies |
 | Bookings | Booking lifecycle, events, dashboard calendar (day/week/resource views), manual booking |
 | Customers | Global customers, customer profiles, consents, customer list and detail |

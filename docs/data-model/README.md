@@ -157,9 +157,9 @@ erDiagram
 | `customer_profiles` | [03](03-customers.md#customer_profiles) | customers | tenant | 1 |
 | `customer_addresses` | [03](03-customers.md#customer_addresses) | customers | global (customer-owned) | 3 |
 | `consents` | [03](03-customers.md#consents) | customers | tenant | 1 |
-| `schedules` | [04](04-scheduling-and-resources.md#schedules) | scheduling | tenant | 1 |
-| `schedule_intervals` | [04](04-scheduling-and-resources.md#schedule_intervals) | scheduling | tenant | 1 |
-| `schedule_exceptions` | [04](04-scheduling-and-resources.md#schedule_exceptions) | scheduling | tenant | 1 |
+| `schedules` | [04](04-scheduling-and-resources.md#schedules) | scheduling | tenant | 0 |
+| `schedule_intervals` | [04](04-scheduling-and-resources.md#schedule_intervals) | scheduling | tenant | 0 |
+| `schedule_exceptions` | [04](04-scheduling-and-resources.md#schedule_exceptions) | scheduling | tenant | 0 |
 | `staff_members` | [04](04-scheduling-and-resources.md#staff_members) | scheduling | tenant | 1 |
 | `resources` | [04](04-scheduling-and-resources.md#resources) | scheduling | tenant | 1 |
 | `resource_groups` | [04](04-scheduling-and-resources.md#resource_groups) | scheduling | tenant | 1 |
@@ -188,7 +188,7 @@ erDiagram
 | `reservation_pacing_rules` | [06](06-bookings.md#reservation_pacing_rules) | bookings | tenant | 3 |
 | `menus` … `order_deliveries` (15 tables) | [07](07-ordering.md) | ordering | tenant | 3 |
 | `payment_accounts`, `payments`, `refunds` | [08](08-payments.md) | payments | tenant | 3 |
-| `plans` … `usage_records` (12 tables) | [09](09-platform-billing.md) | billing | global / tenant | 2 |
+| `plans` … `usage_records` (12 tables) | [09](09-platform-billing.md) | billing | global / tenant | 2 (`plans` seeded in 0) |
 | `phone_numbers` | [10](10-channels-and-conversations.md#phone_numbers) | channels | tenant | 2 |
 | `channel_endpoints` | [10](10-channels-and-conversations.md#channel_endpoints) | channels | tenant | 1 |
 | `conversations` | [10](10-channels-and-conversations.md#conversations) | conversations | tenant | 1 |
@@ -206,6 +206,6 @@ erDiagram
 | `knowledge_sources` | [11](11-agents-and-ai.md#knowledge_sources) | knowledge | tenant | 1 |
 | `knowledge_entries` | [11](11-agents-and-ai.md#knowledge_entries) | knowledge | tenant | 1 |
 | `knowledge_chunks` | [11](11-agents-and-ai.md#knowledge_chunks) | knowledge | tenant | 1 |
-| `notification_templates`, `notifications`, `push_devices` | [12](12-notifications.md) | notifications | global / tenant | 2 |
+| `notification_templates`, `notifications`, `push_devices` | [12](12-notifications.md) | notifications | global / tenant | 0 (email only), 2 |
 | `integration_connections` … `webhook_deliveries` (5 tables) | [13](13-integrations.md) | integrations | tenant | 2–4 |
 | `audit_logs`, `outbox_events`, `inbound_webhook_events`, `idempotency_keys`, `files`, `feature_flags`, `feature_flag_overrides` | [14](14-system.md) | platform modules | mixed | 0 |

@@ -102,8 +102,11 @@ ordinary tenant data.
 | GET · PATCH | `{L}/settings` | `locations.read` · `settings.update` |
 | GET · PUT | `{L}/capabilities/{capability}` | `locations.read` · `locations.update` |
 | GET | `{L}/settings/effective` | `locations.read` |
+| GET | `/orgs/{orgId}/me` | member (own role, permissions, location scope) |
 | GET | `/orgs/{orgId}/members` | `team.read` |
 | PATCH · DELETE | `/orgs/{orgId}/members/{membershipId}` | `team.manage` |
+| POST | `/orgs/{orgId}/ownership-transfer` | owner |
+| POST | `/orgs/{orgId}/invitations/{id}/resend` | `team.manage` |
 | GET · POST | `/orgs/{orgId}/invitations` | `team.manage` |
 | DELETE | `/orgs/{orgId}/invitations/{id}` | `team.manage` |
 | POST | `/invitations/{token}/accept` | invited user (authenticated) |

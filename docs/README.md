@@ -11,7 +11,8 @@ docs/
 │   └── glossary.md         shared vocabulary
 ├── data-model/     every table, every column — the single source of truth for persistence
 ├── features/       one document per feature: behaviour, rules, flows, endpoints, events, jobs
-└── adr/            architecture decision records
+├── adr/            architecture decision records
+└── plans/          implementation plans per phase: order, milestones, done-when checklists
 ```
 
 Root-level technical documents: [ARCHITECTURE.md](../ARCHITECTURE.md),
