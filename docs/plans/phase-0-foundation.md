@@ -5,7 +5,7 @@
 | Goal | A secure, multi-tenant platform skeleton — auth, businesses, locations, opening hours, team and access, admin basics — fully tested, on which every later feature is built |
 | Order | **Part A: backend** (complete and verified) → **Part B: dashboard + admin UI** (starts after design references are shared and the design system is approved) |
 | Specs | [roadmap §Phase 0](../product/roadmap.md#phase-0--foundation), [ARCHITECTURE.md](../../ARCHITECTURE.md), [BACKEND.md](../../BACKEND.md), [FRONTEND.md](../../FRONTEND.md), feature docs linked per milestone |
-| Status | Not started |
+| Status | In progress — A0 |
 
 This plan says **in what order** to build, **what** each step delivers, and **how we prove
 it works**. Behaviour, data and API conventions are defined in the linked docs and are

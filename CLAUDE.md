@@ -48,7 +48,13 @@ ask, or propose a doc change — don't invent behaviour silently.
    changing scope/phase. Record accepted changes as a new ADR.
 6. **Quality bar:** production-grade, industry-standard code — not prototype or tutorial
    code. The UI target is a premium, data-dense, fintech-grade product, not plain forms.
-7. **Report honestly:** say what was tested and how; if something is skipped or failing,
+7. **Use current official docs, not memory.** Before using a library API, check its latest
+   docs/changelog for the installed version (methods, deprecations, new features worth
+   using). Doc websites are often blocked in the cloud sandbox; read the docs source from
+   GitHub (`raw.githubusercontent.com/<org>/<repo>/<branch>/…`), `npm view`, or the docs and
+   `.d.ts` files shipped in `node_modules`. Prefer widely used, maintained packages over
+   custom code.
+8. **Report honestly:** say what was tested and how; if something is skipped or failing,
    say so with the output.
 
 ## Stack (fixed by ADRs)

@@ -1,0 +1,7 @@
+{
+  "extends": "@attendra/config/tsconfig/library.json",
+  "compilerOptions": {
+    "outDir": "dist"
+  },
+  "include": ["src", "*.config.ts"]
+}

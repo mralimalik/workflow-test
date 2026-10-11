@@ -1,0 +1,27 @@
+{
+  "name": "@attendra/config",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./eslint": "./eslint/index.js",
+    "./prettier": "./prettier/index.js",
+    "./tsconfig/*.json": "./tsconfig/*.json"
+  },
+  "dependencies": {
+    "@eslint/js": "10.0.1",
+    "eslint-config-prettier": "10.1.8",
+    "eslint-import-resolver-typescript": "4.4.5",
+    "eslint-plugin-boundaries": "7.2.0",
+    "globals": "17.13.0",
+    "typescript-eslint": "8.71.1"
+  },
+  "peerDependencies": {
+    "eslint": ">=10",
+    "prettier": ">=3",
+    "typescript": ">=6"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  }
+}

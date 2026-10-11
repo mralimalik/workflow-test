@@ -1,0 +1,6 @@
+# Manual exploration (VS Code REST Client / JetBrains HTTP Client).
+# Select the "local" environment from http-client.env.json. Collections are added per feature.
+
+### Unknown route → 404
+GET {{baseUrl}}/v1/does-not-exist
+Accept: application/json

@@ -1,0 +1,28 @@
+{
+  "name": "@attendra/api",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "build": "tsc -b tsconfig.build.json",
+    "dev": "tsc -b tsconfig.build.json && concurrently -k -n tsc,api -c blue,green \"tsc -b tsconfig.build.json --watch --preserveWatchOutput\" \"node --env-file-if-exists=../../.env --enable-source-maps --watch-path=dist --watch-path=../../packages/server/dist dist/main.js\"",
+    "start": "node --enable-source-maps dist/main.js",
+    "typecheck": "tsc --noEmit",
+    "scenarios": "node --env-file-if-exists=../../.env --import tsx scenarios/run.ts"
+  },
+  "dependencies": {
+    "@attendra/server": "workspace:*",
+    "@nestjs/common": "11.2.7",
+    "@nestjs/core": "11.2.7",
+    "@nestjs/platform-express": "11.2.7",
+    "reflect-metadata": "0.2.2",
+    "rxjs": "7.8.2"
+  },
+  "devDependencies": {
+    "@attendra/config": "workspace:*",
+    "concurrently": "10.0.6",
+    "@nestjs/testing": "11.2.7",
+    "@types/supertest": "7.2.1",
+    "supertest": "7.3.1",
+    "tsx": "4.23.15"
+  }
+}

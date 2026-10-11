@@ -704,6 +704,9 @@ never on `title` or `detail`.
 
 ## 13. Database migrations
 
+- Location: `packages/server/migrations/` (SQL + drizzle-kit `meta/`); applied by
+  `pnpm db:migrate` with the owner role, tracked in `drizzle.__drizzle_migrations`. The
+  baseline migration creates extensions and default privileges for `attendra_app`.
 - drizzle-kit generates SQL from schema changes; generated SQL is reviewed and
   hand-edited where needed (RLS, exclusion constraints, partitions, data migrations).
 - Forward-only; each migration is backward compatible with the previous app release:
@@ -737,6 +740,11 @@ their names where applicable (`it('FR-SCH-003 rejects overlapping allocations', 
   kebab-case.
 - **Lint/format:** ESLint (flat config, `typescript-eslint` strict, `eslint-plugin-boundaries`)
   + Prettier; `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes` on.
+- **Builds:** backend (`packages/server`, `apps/api`, `apps/worker`) compiles with `tsc` to
+  CommonJS (Nest decorator metadata); shared packages (`contracts`, `utils`) build ESM + CJS
+  with tsdown. Tests run through Vitest + SWC.
+- **Test files:** `*.test.ts` unit · `*.int.test.ts` integration · `*.e2e.test.ts` API e2e
+  (Vitest projects `unit`, `integration`, `e2e`).
 - **Dates:** never `new Date()` in domain code — inject a `Clock`. Time zone math uses
   `@js-temporal/polyfill` (or `date-fns-tz`) behind `kernel/time`.
 - **IDs:** UUIDv7 generated in the app (`kernel/ids`), never DB `serial`.

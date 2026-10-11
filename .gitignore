@@ -12,3 +12,6 @@ coverage/
 .idea/
 .vscode/*
 !.vscode/extensions.json
+*.tsbuildinfo
+reports/
+!reports/.gitkeep

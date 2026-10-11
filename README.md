@@ -72,7 +72,7 @@ attendra/
 
 ### Requirements
 
-- Node.js 22 LTS, pnpm 9+
+- Node.js 22 LTS (`.nvmrc`), pnpm 10 (`corepack enable` picks the pinned version)
 - PostgreSQL 17 with the `pgvector`, `btree_gist` and `citext` extensions
 - Redis 7
 
@@ -100,9 +100,36 @@ CREATE DATABASE attendra OWNER attendra;
 CREATE EXTENSION IF NOT EXISTS vector;
 CREATE EXTENSION IF NOT EXISTS btree_gist;
 CREATE EXTENSION IF NOT EXISTS citext;
+-- Runtime role: row-level security applies to it (BACKEND.md §7).
+CREATE ROLE attendra_app LOGIN PASSWORD 'attendra_app' NOBYPASSRLS;
+GRANT CONNECT ON DATABASE attendra TO attendra_app;
 ```
 
 Run Redis on the default port with `maxmemory-policy noeviction` (required by BullMQ).
 
 > These credentials are for local development only. Real environments read secrets
 > from the environment, never from committed files — see [BACKEND.md §12](BACKEND.md#12-configuration-and-secrets).
+
+### First run
+
+```bash
+pnpm install
+pnpm db:migrate          # applies migrations as the owner role
+pnpm db:seed             # idempotent seeds
+pnpm dev                 # api on :4000 + worker, rebuilding on change
+```
+
+### Everyday commands
+
+| Command | What it does |
+|---|---|
+| `pnpm lint` / `pnpm lint:fix` | ESLint (type-aware + architectural boundaries) |
+| `pnpm format` / `pnpm format:check` | Prettier |
+| `pnpm typecheck` | `tsc --noEmit` in every package |
+| `pnpm test` | unit → integration → e2e (`test:unit`, `test:int`, `test:e2e`); integration and e2e need the services above |
+| `pnpm build` | builds all packages and apps (Turborepo, cached) |
+| `pnpm db:generate` | generates a migration from Drizzle schema changes (review the SQL) |
+| `pnpm db:reset` | drops and re-migrates the **local** database (refuses elsewhere) |
+| `pnpm api:scenarios` | runs API scenarios against a running API → `reports/api-scenarios/<timestamp>.md` |
+
+Manual requests: `apps/api/http/*.http` (VS Code REST Client / JetBrains HTTP Client).
