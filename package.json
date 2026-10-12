@@ -25,18 +25,21 @@
     "db:seed": "pnpm --filter @attendra/server db:seed",
     "db:reset": "pnpm --filter @attendra/server db:reset",
     "api:scenarios": "pnpm --filter @attendra/api scenarios",
-    "api:client": "turbo run build --filter=@attendra/server... --output-logs=errors-only && pnpm --filter @attendra/api openapi:export && pnpm --filter @attendra/api-client generate && prettier --write packages/api-client/openapi.json --log-level warn"
+    "api:client": "turbo run build --filter=@attendra/server... --output-logs=errors-only && pnpm --filter @attendra/api openapi:export && pnpm --filter @attendra/api-client generate && prettier --write packages/api-client/openapi.json --log-level warn",
+    "db:check-rls": "pnpm --filter @attendra/server db:check-rls"
   },
   "devDependencies": {
     "@attendra/config": "workspace:*",
     "@swc/core": "1.16.18",
     "@types/node": "^22.19.0",
+    "@types/pg": "8.23.1",
+    "@vitest/coverage-v8": "5.0.3",
     "eslint": "10.12.0",
+    "pg": "8.23.1",
     "prettier": "3.9.10",
     "turbo": "2.11.7",
     "typescript": "6.0.3",
     "unplugin-swc": "2.0.0",
-    "vitest": "5.0.3",
-    "@vitest/coverage-v8": "5.0.3"
+    "vitest": "5.0.3"
   }
 }

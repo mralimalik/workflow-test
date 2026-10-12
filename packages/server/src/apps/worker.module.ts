@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 
+import { DatabaseModule } from '../kernel/db/database.module';
 import { KernelModule, type KernelOptions } from '../kernel/kernel.module';
 
 /**
@@ -9,6 +10,12 @@ import { KernelModule, type KernelOptions } from '../kernel/kernel.module';
 @Module({})
 export class WorkerModule {
   static forRoot(options: Omit<KernelOptions, 'app'> = {}) {
-    return { module: WorkerModule, imports: [KernelModule.forRoot({ app: 'worker', ...options })] };
+    return {
+      module: WorkerModule,
+      imports: [
+        KernelModule.forRoot({ app: 'worker', ...options }),
+        DatabaseModule.forRoot({ statementTimeoutMs: 60_000, applicationName: 'attendra-worker' }),
+      ],
+    };
   }
 }

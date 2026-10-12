@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 
+import { DatabaseModule } from '../kernel/db/database.module';
 import { HealthModule } from '../kernel/health/health.module';
 import { KernelModule, type KernelOptions } from '../kernel/kernel.module';
 
@@ -12,7 +13,11 @@ export class ApiModule {
   static forRoot(options: Omit<KernelOptions, 'app'> = {}) {
     return {
       module: ApiModule,
-      imports: [KernelModule.forRoot({ app: 'api', ...options }), HealthModule],
+      imports: [
+        KernelModule.forRoot({ app: 'api', ...options }),
+        DatabaseModule.forRoot({ statementTimeoutMs: 5_000, applicationName: 'attendra-api' }),
+        HealthModule,
+      ],
     };
   }
 }

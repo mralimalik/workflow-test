@@ -84,6 +84,9 @@ jobs:
       - name: Migrate
         run: pnpm db:migrate
 
+      - name: RLS check (every tenant table has RLS enabled, forced, tenant_isolation)
+        run: pnpm db:check-rls
+
       - name: Integration tests
         run: pnpm test:int
 

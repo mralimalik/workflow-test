@@ -5,7 +5,7 @@
 | Goal | A secure, multi-tenant platform skeleton — auth, businesses, locations, opening hours, team and access, admin basics — fully tested, on which every later feature is built |
 | Order | **Part A: backend** (complete and verified) → **Part B: dashboard + admin UI** (starts after design references are shared and the design system is approved) |
 | Specs | [roadmap §Phase 0](../product/roadmap.md#phase-0--foundation), [ARCHITECTURE.md](../../ARCHITECTURE.md), [BACKEND.md](../../BACKEND.md), [FRONTEND.md](../../FRONTEND.md), feature docs linked per milestone |
-| Status | In progress — A2 |
+| Status | In progress — A3 |
 
 Library versions and features reviewed for this phase: [stack-review-2026-10.md](stack-review-2026-10.md).
 
@@ -132,13 +132,15 @@ are merged in order; each one is a reviewable PR.
   `organization_id` has RLS enabled, forced, and a `tenant_isolation` policy.
 - Mapping of Postgres errors (unique, FK, check, exclusion) to domain/AppErrors.
 - Seed framework: idempotent seeds (system roles, plans, feature flags, notification
-  templates, first super admin via CLI), plus a `demo` seed (local only).
+  templates, first super admin via CLI), plus a `demo` seed (local only). The framework
+  (`kernel/db/seeds`, `pnpm db:seed`) lands here; each seed lands with the milestone that
+  owns its table (A3 templates, A5 admin CLI, A6 plans, A8 roles, A9 demo).
 - Test harness: template database migrated once; per-worker clones; truncation helpers.
 
 **Done when**
-- [ ] Integration test: query without tenant context returns 0 rows; insert with another org's id fails.
-- [ ] Integration test: pooled connection reuse never leaks `app.organization_id`.
-- [ ] CI fails if a migration adds a tenant table without RLS.
+- [x] Integration test: query without tenant context returns 0 rows; insert with another org's id fails.
+- [x] Integration test: pooled connection reuse never leaks `app.organization_id`.
+- [x] CI fails if a migration adds a tenant table without RLS.
 
 ### A3 · Platform modules
 
@@ -361,7 +363,7 @@ Plus visual checks (light/dark, one RTL locale) and axe accessibility checks on 
 |---|---|
 | A0 Repository and tooling | ✅ |
 | A1 Backend kernel | ✅ |
-| A2 Database foundation | ☐ |
+| A2 Database foundation | ✅ |
 | A3 Platform modules | ☐ |
 | A4 User authentication | ☐ |
 | A5 Platform admins | ☐ |

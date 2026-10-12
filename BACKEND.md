@@ -397,16 +397,21 @@ ALTER TABLE bookings FORCE ROW LEVEL SECURITY;
 
 -- Business and agent access: bound to one organization per transaction.
 CREATE POLICY tenant_isolation ON bookings
-  USING (organization_id = current_setting('app.organization_id', true)::uuid)
-  WITH CHECK (organization_id = current_setting('app.organization_id', true)::uuid);
+  USING (organization_id = nullif(current_setting('app.organization_id', true), '')::uuid)
+  WITH CHECK (organization_id = nullif(current_setting('app.organization_id', true), '')::uuid);
 
 -- Customer cross-organization access: only their own rows, read-only.
 CREATE POLICY customer_read_own ON bookings FOR SELECT
-  USING (customer_id = current_setting('app.customer_id', true)::uuid);
+  USING (customer_id = nullif(current_setting('app.customer_id', true), '')::uuid);
 ```
 
-`current_setting(..., true)` returns `NULL` when unset, so a query without context matches
-nothing (fails closed). Platform-scope jobs that legitimately span tenants (billing
+`current_setting(..., true)` returns `NULL` when the setting was never set and `''` on a
+pooled connection after a previous transaction-local value ended; `nullif(..., '')` turns
+both into `NULL`, so a query without context matches nothing (fails closed) instead of
+raising a cast error. Policies are declared in Drizzle schemas with `tenantPolicies()` +
+`.enableRLS()`; `FORCE` is appended with `forceRlsSql()` (Drizzle cannot express it), and
+`pnpm db:check-rls` (CI) fails when a tenant table lacks any of the three
+(`kernel/db/rls.ts`). Platform-scope jobs that legitimately span tenants (billing
 reconciliation, retention) run with `app.scope = 'platform'` and dedicated policies limited
 to the tables they need, and are audited.
 
@@ -732,7 +737,7 @@ never on `title` or `detail`.
 | Level | Scope | Tools | Notes |
 |---|---|---|---|
 | Unit | Domain logic: availability, state machines, policy evaluation, pricing, settings resolution | Vitest | Pure, fast, no mocks needed; property-based tests (fast-check) for availability and time math |
-| Integration | Repositories, RLS, constraints, transactions, outbox, cache invalidation | Vitest + real Postgres/Redis (docker compose or CI services) | Each test in a rolled-back transaction or fresh schema |
+| Integration | Repositories, RLS, constraints, transactions, outbox, cache invalidation | Vitest + real Postgres/Redis (docker compose or CI services) | One database per test file, cloned from a template migrated once per run (`test/global-setup.ts`, `test/db-per-file.ts`) |
 | API e2e | HTTP contract, auth, permissions, tenant isolation, idempotency | Supertest against the Nest app | Every endpoint has an "other tenant gets 404" test |
 | Concurrency | Double-booking under parallel requests | Custom harness | N parallel bookings for one slot → exactly 1 succeeds |
 | Provider adapters | Twilio/OpenAI/Stripe adapters | Recorded fixtures + contract tests | No live calls in CI |

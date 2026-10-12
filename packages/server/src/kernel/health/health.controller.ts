@@ -1,18 +1,35 @@
-import { Controller, Inject, Optional, ServiceUnavailableException } from '@nestjs/common';
+import {
+  Controller,
+  type OnApplicationBootstrap,
+  ServiceUnavailableException,
+} from '@nestjs/common';
+import { DiscoveryService } from '@nestjs/core';
 import { HealthCheckService, type HealthCheckResult } from '@nestjs/terminus';
 import { routes } from '@attendra/contracts';
 
 import { AppError } from '../errors/app-error';
 import { ContractRoute } from '../http/contract-route';
-import { READINESS_CHECKS, type ReadinessCheck } from './health-indicators';
+import { READINESS_CHECK, type ReadinessCheck } from './health-indicators';
 
 /** `/internal/health/*` (BACKEND.md §8.3), used by load balancers and orchestrators. */
 @Controller()
-export class HealthController {
+export class HealthController implements OnApplicationBootstrap {
+  private checks: ReadinessCheck[] = [];
+
   constructor(
     private readonly health: HealthCheckService,
-    @Optional() @Inject(READINESS_CHECKS) private readonly checks: ReadinessCheck[] = [],
+    private readonly discovery: DiscoveryService,
   ) {}
+
+  onApplicationBootstrap(): void {
+    this.checks = this.discovery
+      .getProviders()
+      .filter(
+        (w) =>
+          w.metatype && Reflect.getMetadata(READINESS_CHECK, w.metatype) === true && w.instance,
+      )
+      .map((w) => w.instance as ReadinessCheck);
+  }
 
   @ContractRoute(routes.health.live)
   async live(): Promise<HealthCheckResult> {

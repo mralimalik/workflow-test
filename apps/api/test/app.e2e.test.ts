@@ -20,10 +20,11 @@ describe('API app (A1)', () => {
       expect(res.body.status).toBe('ok');
     });
 
-    it('GET /internal/health/ready → 200', async () => {
+    it('GET /internal/health/ready → 200 with the database check up', async () => {
       const res = await request(t.server).get('/internal/health/ready');
       expect(res.status).toBe(200);
       expect(res.body.status).toBe('ok');
+      expect(res.body.details.database.status).toBe('up');
     });
   });
 

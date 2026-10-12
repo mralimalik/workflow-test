@@ -4,7 +4,8 @@ import { defineConfig } from 'vitest/config';
 /**
  * Test projects (docs/plans/phase-0-foundation.md §1):
  *   unit         *.test.ts             pure logic, no I/O
- *   integration  *.int.test.ts         real Postgres + Redis (docker compose / CI services)
+ *   integration  *.int.test.ts         real Postgres + Redis; one database per test file,
+ *                                      cloned from a template migrated once per run
  *   e2e          *.e2e.test.ts         the real Nest app over HTTP (Supertest)
  * SWC compiles TypeScript so Nest's decorator metadata is emitted.
  */
@@ -28,7 +29,8 @@ export default defineConfig({
           name: 'integration',
           include: ['{apps,packages}/*/{src,test}/**/*.int.test.ts'],
           exclude,
-          setupFiles: ['./test/load-env.ts'],
+          globalSetup: ['./test/global-setup.ts'],
+          setupFiles: ['./test/load-env.ts', './test/db-per-file.ts'],
           testTimeout: 30_000,
           hookTimeout: 60_000,
         },
@@ -39,7 +41,8 @@ export default defineConfig({
           name: 'e2e',
           include: ['{apps,packages}/*/{src,test}/**/*.e2e.test.ts'],
           exclude,
-          setupFiles: ['./test/load-env.ts'],
+          globalSetup: ['./test/global-setup.ts'],
+          setupFiles: ['./test/load-env.ts', './test/db-per-file.ts'],
           testTimeout: 30_000,
           hookTimeout: 60_000,
         },
