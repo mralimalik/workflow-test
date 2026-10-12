@@ -1,7 +1,7 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
 import { ERROR_CODES, PROBLEM_TYPE_BASE, type ErrorCode, type Problem } from '@attendra/contracts';
 
-import { AppError } from './app-error';
+import { isAppError } from './app-error';
 
 export interface ProblemResponse {
   status: number;
@@ -61,7 +61,7 @@ function build(code: ErrorCode, requestId: string | undefined, detail?: string):
  * `500 internal_error`; their message never reaches the client.
  */
 export function toProblem(error: unknown, requestId: string | undefined): ProblemResponse {
-  if (error instanceof AppError) {
+  if (isAppError(error)) {
     const body = build(error.code, requestId, error.detail);
     if (error.fieldErrors) body.errors = error.fieldErrors;
     return {

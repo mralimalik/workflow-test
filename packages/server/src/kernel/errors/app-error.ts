@@ -10,11 +10,24 @@ export interface AppErrorOptions {
   cause?: unknown;
 }
 
+/** Process-wide brand (survives duplicate module instances, unlike `instanceof`). */
+const APP_ERROR = Symbol.for('attendra.AppError');
+
+/** True for any AppError, even one created by another copy of this module. */
+export function isAppError(value: unknown): value is AppError {
+  return (
+    typeof value === 'object' &&
+    value !== null &&
+    (value as Record<symbol, unknown>)[APP_ERROR] === true
+  );
+}
+
 /**
  * Base of every expected error (BACKEND.md §11.1). The `code` is stable and documented in
  * `@attendra/contracts`; its HTTP status comes from the same catalogue.
  */
 export class AppError extends Error {
+  readonly [APP_ERROR] = true;
   readonly code: ErrorCode;
   readonly status: number;
   readonly detail: string | undefined;

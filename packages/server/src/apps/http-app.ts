@@ -8,12 +8,13 @@ import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
 import { Logger } from 'nestjs-pino';
 
-import { AppConfig } from '../config/app-config';
-import { requestContextMiddleware } from '../context/request-context.middleware';
-import { ProblemDetailsFilter } from '../errors/problem-details.filter';
-import { corsDelegate } from './cors';
-import { buildOpenApiDocument } from './openapi';
-import { ContractValidationPipe } from './validation.pipe';
+import { AppConfig } from '../kernel/config/app-config';
+import { requestContextMiddleware } from '../kernel/context/request-context.middleware';
+import { IdempotencyInterceptor } from '../modules/idempotency/idempotency.public';
+import { ProblemDetailsFilter } from '../kernel/errors/problem-details.filter';
+import { corsDelegate } from '../kernel/http/cors';
+import { buildOpenApiDocument } from '../kernel/http/openapi';
+import { ContractValidationPipe } from '../kernel/http/validation.pipe';
 
 export const DOCS_PATH = 'docs';
 export const BODY_LIMIT = '1mb';
@@ -74,7 +75,11 @@ export function configureHttpApp(app: NestExpressApplication): void {
 
   // Validation, response serialization and error mapping (BACKEND.md §4 steps 10, 13, 14).
   app.useGlobalPipes(new ContractValidationPipe());
-  app.useGlobalInterceptors(new StandardSchemaSerializerInterceptor(app.get(Reflector)));
+  // Order matters: idempotency is outermost so it stores the serialized response.
+  app.useGlobalInterceptors(
+    app.get(IdempotencyInterceptor),
+    new StandardSchemaSerializerInterceptor(app.get(Reflector)),
+  );
   app.useGlobalFilters(new ProblemDetailsFilter());
 
   app.enableShutdownHooks();

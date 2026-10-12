@@ -1,7 +1,13 @@
 import { BadRequestException, NotFoundException, PayloadTooLargeException } from '@nestjs/common';
 import { describe, expect, it } from 'vitest';
 
-import { AppError, NotFoundError, RateLimitedError, ValidationError } from './app-error';
+import {
+  AppError,
+  isAppError,
+  NotFoundError,
+  RateLimitedError,
+  ValidationError,
+} from './app-error';
 import { toProblem } from './problem';
 
 describe('toProblem (RFC 9457)', () => {
@@ -52,6 +58,20 @@ describe('toProblem (RFC 9457)', () => {
     expect(JSON.stringify(p.body)).not.toContain('secret');
     // A status on a non-exposable error is not trusted.
     expect(toProblem(Object.assign(new Error('x'), { status: 404 }), 'r').status).toBe(500);
+  });
+
+  it('recognises AppErrors from another module instance (brand, not instanceof)', () => {
+    const foreign = Object.assign(new Error('x'), {
+      [Symbol.for('attendra.AppError')]: true,
+      code: 'conflict',
+      status: 409,
+      detail: undefined,
+      fieldErrors: undefined,
+      headers: undefined,
+    });
+    expect(isAppError(foreign)).toBe(true);
+    expect(toProblem(foreign, 'r').status).toBe(409);
+    expect(isAppError(new Error('plain'))).toBe(false);
   });
 
   it('treats 5xx AppErrors as unexpected', () => {

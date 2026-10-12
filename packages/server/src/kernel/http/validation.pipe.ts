@@ -2,7 +2,7 @@ import { type ArgumentMetadata, Injectable, StandardSchemaValidationPipe } from 
 import type { FieldError } from '@attendra/contracts';
 import type { StandardSchemaV1 } from '@standard-schema/spec';
 
-import { ValidationError } from '../errors/app-error';
+import { isAppError, ValidationError } from '../errors/app-error';
 
 function pathOf(issue: StandardSchemaV1.Issue): string {
   return (issue.path ?? []).map((p) => String(typeof p === 'object' ? p.key : p)).join('.');
@@ -43,7 +43,7 @@ export class ContractValidationPipe extends StandardSchemaValidationPipe {
       return await super.transform(value, metadata);
     } catch (error) {
       const prefix = PREFIX[metadata.type];
-      if (error instanceof ValidationError && prefix && error.fieldErrors) {
+      if (isAppError(error) && error.code === 'validation_failed' && prefix && error.fieldErrors) {
         throw new ValidationError(
           error.fieldErrors.map((e) => ({ ...e, path: e.path ? `${prefix}.${e.path}` : prefix })),
         );

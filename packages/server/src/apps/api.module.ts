@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 
 import { AuditModule } from '../modules/audit/audit.public';
+import { IdempotencyModule } from '../modules/idempotency/idempotency.public';
 import { OutboxModule } from '../modules/outbox/outbox.public';
 import { CacheModule } from '../kernel/cache/cache.module';
 import { DatabaseModule } from '../kernel/db/database.module';
@@ -27,6 +28,7 @@ export class ApiModule {
         QueueModule,
         AuditModule,
         OutboxModule,
+        IdempotencyModule,
         RateLimitModule,
         HealthModule,
       ],

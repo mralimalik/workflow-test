@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { ApiModule } from '@attendra/server/apps/api.module';
-import { configureHttpApp } from '@attendra/server/kernel/http/configure-app';
+import { configureHttpApp } from '@attendra/server/apps/http-app';
 import type { KernelOptions } from '@attendra/server/kernel/kernel.module';
 
 /**

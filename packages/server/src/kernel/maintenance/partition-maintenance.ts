@@ -1,13 +1,10 @@
-import { InjectQueue, Processor } from '@nestjs/bullmq';
-import { Injectable, type OnApplicationBootstrap } from '@nestjs/common';
-import type { Job, Queue } from 'bullmq';
+import { Injectable } from '@nestjs/common';
 import { sql } from 'drizzle-orm';
 
 import { Database } from '../db/database';
-import { AppProcessor } from '../queue/app-processor';
-import { QUEUES } from '../queue/queues';
+import { MaintenanceTaskProvider, type MaintenanceTask } from './maintenance';
 
-/** Monthly-partitioned tables and how long published/old partitions are kept. */
+/** Monthly-partitioned tables and how long expired partitions are kept. */
 export const PARTITIONED_TABLES: readonly {
   table: string;
   drop?: { keep: string; stillNeeded?: string };
@@ -18,15 +15,16 @@ export const PARTITIONED_TABLES: readonly {
 
 const MONTHS_AHEAD = 2;
 
-/** Nightly `maintenance/partition-maintain` (BACKEND.md §10.3): create ahead, drop expired. */
-@Processor(QUEUES.maintenance)
-export class MaintenanceProcessor extends AppProcessor {
-  constructor(private readonly db: Database) {
-    super();
-  }
+/** `partition-maintain` (nightly): create partitions ahead, drop expired ones. */
+@MaintenanceTaskProvider()
+@Injectable()
+export class PartitionMaintenanceTask implements MaintenanceTask {
+  readonly name = 'partition-maintain';
+  readonly schedule = '15 3 * * *';
 
-  protected async handle(job: Job): Promise<unknown> {
-    if (job.name !== 'partition-maintain') return undefined;
+  constructor(private readonly db: Database) {}
+
+  run(): Promise<{ dropped: string[] }> {
     return this.db.platformTx(
       { actor: { type: 'system', id: 'maintenance' }, reason: 'partition maintenance' },
       async (tx) => {
@@ -44,20 +42,6 @@ export class MaintenanceProcessor extends AppProcessor {
         }
         return { dropped };
       },
-    );
-  }
-}
-
-/** Registers recurring maintenance with BullMQ Job Schedulers (idempotent upsert). */
-@Injectable()
-export class MaintenanceSchedules implements OnApplicationBootstrap {
-  constructor(@InjectQueue(QUEUES.maintenance) private readonly queue: Queue) {}
-
-  async onApplicationBootstrap(): Promise<void> {
-    await this.queue.upsertJobScheduler(
-      'partition-maintain',
-      { pattern: '15 3 * * *', tz: 'UTC' },
-      { name: 'partition-maintain' },
     );
   }
 }
