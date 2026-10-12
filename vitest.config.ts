@@ -41,6 +41,9 @@ export default defineConfig({
           name: 'e2e',
           include: ['{apps,packages}/*/{src,test}/**/*.e2e.test.ts'],
           exclude,
+          // Load the built backend natively (not through Vite), so tests and the Nest app
+          // share one module instance — DI tokens like Database must be the same class.
+          server: { deps: { external: [/packages\/server\/dist\//] } },
           globalSetup: ['./test/global-setup.ts'],
           setupFiles: ['./test/load-env.ts', './test/db-per-file.ts'],
           testTimeout: 30_000,

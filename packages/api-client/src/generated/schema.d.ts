@@ -38,65 +38,112 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/public/files/uploads/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        /** Upload file bytes to a signed upload URL */
+        put: operations["files.upload"];
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/public/files/{token}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Download a file from a signed download URL */
+        get: operations["files.download"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        __schema0: string;
         HealthResult: {
-            status: components["schemas"]["__schema0"];
-            info?: components["schemas"]["__schema1"];
-            error?: components["schemas"]["__schema3"];
-            details: components["schemas"]["__schema4"];
+            status: components["schemas"]["__schema1"];
+            info?: components["schemas"]["__schema2"];
+            error?: components["schemas"]["__schema4"];
+            details: components["schemas"]["__schema5"];
         };
         /** @description RFC 9457 problem details */
         Problem: {
-            type: components["schemas"]["__schema5"];
-            title: components["schemas"]["__schema6"];
-            status: components["schemas"]["__schema7"];
-            code: components["schemas"]["__schema8"];
-            detail: components["schemas"]["__schema9"];
-            requestId: components["schemas"]["__schema10"];
-            errors?: components["schemas"]["__schema11"];
+            type: components["schemas"]["__schema6"];
+            title: components["schemas"]["__schema7"];
+            status: components["schemas"]["__schema8"];
+            code: components["schemas"]["__schema9"];
+            detail: components["schemas"]["__schema10"];
+            requestId: components["schemas"]["__schema11"];
+            errors?: components["schemas"]["__schema12"];
         };
         FieldError: {
-            path: components["schemas"]["__schema12"];
-            code: components["schemas"]["__schema13"];
-            message: components["schemas"]["__schema14"];
+            path: components["schemas"]["__schema13"];
+            code: components["schemas"]["__schema14"];
+            message: components["schemas"]["__schema15"];
+        };
+        FileUploadResult: {
+            id: components["schemas"]["__schema16"];
+            status: components["schemas"]["__schema17"];
+            contentType: components["schemas"]["__schema18"];
+            sizeBytes: components["schemas"]["__schema19"];
         };
         /** @enum {string} */
-        __schema0: "ok" | "error" | "shutting_down" | "degraded";
-        __schema1: {
-            [key: string]: components["schemas"]["__schema2"];
-        };
+        __schema1: "ok" | "error" | "shutting_down" | "degraded";
         __schema2: {
+            [key: string]: components["schemas"]["__schema3"];
+        };
+        __schema3: {
             /** @enum {string} */
             status: "up" | "down" | "degraded";
         } & {
             [key: string]: unknown;
         };
-        __schema3: {
-            [key: string]: components["schemas"]["__schema2"];
-        };
         __schema4: {
-            [key: string]: components["schemas"]["__schema2"];
+            [key: string]: components["schemas"]["__schema3"];
+        };
+        __schema5: {
+            [key: string]: components["schemas"]["__schema3"];
         };
         /** Format: uri */
-        __schema5: string;
         __schema6: string;
-        __schema7: number;
+        __schema7: string;
+        __schema8: number;
         /** @description Stable machine-readable error code */
-        __schema8: string;
-        __schema9: string | null;
+        __schema9: string;
         __schema10: string | null;
-        __schema11: components["schemas"]["FieldError"][];
+        __schema11: string | null;
+        __schema12: components["schemas"]["FieldError"][];
         /**
          * @description Dot path to the field, e.g. `address.city`
          * @example email
          */
-        __schema12: string;
-        /** @example invalid_format */
         __schema13: string;
+        /** @example invalid_format */
         __schema14: string;
+        __schema15: string;
+        /** Format: uuid */
+        __schema16: string;
+        /** @enum {string} */
+        __schema17: "ready";
+        __schema18: string;
+        __schema19: number;
     };
     responses: never;
     parameters: never;
@@ -169,6 +216,156 @@ export interface operations {
                 };
                 content: {
                     "application/problem+json": components["schemas"]["HealthResult"];
+                };
+            };
+        };
+    };
+    "files.upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: components["schemas"]["__schema0"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/octet-stream": string;
+                "image/png": string;
+                "image/jpeg": string;
+                "image/webp": string;
+            };
+        };
+        responses: {
+            /** @description Stored */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["FileUploadResult"];
+                };
+            };
+            /** @description `forbidden` — You are not allowed to do this */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `not_found` — The resource was not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `conflict` — The request conflicts with the current state */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `payload_too_large` — The request body is too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `unsupported_media_type` — Unsupported content type */
+            415: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `validation_failed` — The request is invalid */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `internal_error` — Something went wrong */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    "files.download": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                token: components["schemas"]["__schema0"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description File bytes */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/octet-stream": string;
+                };
+            };
+            /** @description `forbidden` — You are not allowed to do this */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `not_found` — The resource was not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `validation_failed` — The request is invalid */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `internal_error` — Something went wrong */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
                 };
             };
         };

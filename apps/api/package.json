@@ -25,6 +25,7 @@
     "@nestjs/testing": "12.1.2",
     "@types/supertest": "7.2.1",
     "concurrently": "10.0.6",
+    "drizzle-orm": "0.45.4",
     "ioredis": "5.11.1",
     "socket.io-client": "4.8.4",
     "supertest": "7.3.1",

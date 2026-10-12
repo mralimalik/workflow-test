@@ -78,24 +78,227 @@
           }
         }
       }
+    },
+    "/v1/public/files/uploads/{token}": {
+      "put": {
+        "operationId": "files.upload",
+        "summary": "Upload file bytes to a signed upload URL",
+        "tags": ["Files"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "schema": {
+              "$ref": "#/components/schemas/__schema0"
+            },
+            "required": true
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            },
+            "image/png": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            },
+            "image/jpeg": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            },
+            "image/webp": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Stored",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileUploadResult"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`forbidden` — You are not allowed to do this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "`not_found` — The resource was not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`conflict` — The request conflicts with the current state",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "`payload_too_large` — The request body is too large",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "`unsupported_media_type` — Unsupported content type",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "`validation_failed` — The request is invalid",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "`internal_error` — Something went wrong",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/public/files/{token}": {
+      "get": {
+        "operationId": "files.download",
+        "summary": "Download a file from a signed download URL",
+        "tags": ["Files"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "token",
+            "schema": {
+              "$ref": "#/components/schemas/__schema0"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "File bytes",
+            "content": {
+              "application/octet-stream": {
+                "schema": {
+                  "type": "string",
+                  "format": "binary"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`forbidden` — You are not allowed to do this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "`not_found` — The resource was not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "`validation_failed` — The request is invalid",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "`internal_error` — Something went wrong",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "__schema0": {
+        "type": "string",
+        "minLength": 20,
+        "maxLength": 600
+      },
       "HealthResult": {
         "type": "object",
         "properties": {
           "status": {
-            "$ref": "#/components/schemas/__schema0"
-          },
-          "info": {
             "$ref": "#/components/schemas/__schema1"
           },
+          "info": {
+            "$ref": "#/components/schemas/__schema2"
+          },
           "error": {
-            "$ref": "#/components/schemas/__schema3"
+            "$ref": "#/components/schemas/__schema4"
           },
           "details": {
-            "$ref": "#/components/schemas/__schema4"
+            "$ref": "#/components/schemas/__schema5"
           }
         },
         "required": ["status", "details"],
@@ -105,25 +308,25 @@
         "type": "object",
         "properties": {
           "type": {
-            "$ref": "#/components/schemas/__schema5"
-          },
-          "title": {
             "$ref": "#/components/schemas/__schema6"
           },
-          "status": {
+          "title": {
             "$ref": "#/components/schemas/__schema7"
           },
-          "code": {
+          "status": {
             "$ref": "#/components/schemas/__schema8"
           },
-          "detail": {
+          "code": {
             "$ref": "#/components/schemas/__schema9"
           },
-          "requestId": {
+          "detail": {
             "$ref": "#/components/schemas/__schema10"
           },
-          "errors": {
+          "requestId": {
             "$ref": "#/components/schemas/__schema11"
+          },
+          "errors": {
+            "$ref": "#/components/schemas/__schema12"
           }
         },
         "required": ["type", "title", "status", "code", "detail", "requestId"],
@@ -134,32 +337,51 @@
         "type": "object",
         "properties": {
           "path": {
-            "$ref": "#/components/schemas/__schema12"
-          },
-          "code": {
             "$ref": "#/components/schemas/__schema13"
           },
-          "message": {
+          "code": {
             "$ref": "#/components/schemas/__schema14"
+          },
+          "message": {
+            "$ref": "#/components/schemas/__schema15"
           }
         },
         "required": ["path", "code", "message"],
         "additionalProperties": false
       },
-      "__schema0": {
+      "FileUploadResult": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/__schema16"
+          },
+          "status": {
+            "$ref": "#/components/schemas/__schema17"
+          },
+          "contentType": {
+            "$ref": "#/components/schemas/__schema18"
+          },
+          "sizeBytes": {
+            "$ref": "#/components/schemas/__schema19"
+          }
+        },
+        "required": ["id", "status", "contentType", "sizeBytes"],
+        "additionalProperties": false
+      },
+      "__schema1": {
         "type": "string",
         "enum": ["ok", "error", "shutting_down", "degraded"]
       },
-      "__schema1": {
+      "__schema2": {
         "type": "object",
         "propertyNames": {
           "type": "string"
         },
         "additionalProperties": {
-          "$ref": "#/components/schemas/__schema2"
+          "$ref": "#/components/schemas/__schema3"
         }
       },
-      "__schema2": {
+      "__schema3": {
         "type": "object",
         "properties": {
           "status": {
@@ -170,63 +392,80 @@
         "required": ["status"],
         "additionalProperties": {}
       },
-      "__schema3": {
-        "type": "object",
-        "propertyNames": {
-          "type": "string"
-        },
-        "additionalProperties": {
-          "$ref": "#/components/schemas/__schema2"
-        }
-      },
       "__schema4": {
         "type": "object",
         "propertyNames": {
           "type": "string"
         },
         "additionalProperties": {
-          "$ref": "#/components/schemas/__schema2"
+          "$ref": "#/components/schemas/__schema3"
         }
       },
       "__schema5": {
+        "type": "object",
+        "propertyNames": {
+          "type": "string"
+        },
+        "additionalProperties": {
+          "$ref": "#/components/schemas/__schema3"
+        }
+      },
+      "__schema6": {
         "type": "string",
         "format": "uri"
       },
-      "__schema6": {
+      "__schema7": {
         "type": "string"
       },
-      "__schema7": {
+      "__schema8": {
         "type": "integer",
         "minimum": -9007199254740991,
         "maximum": 9007199254740991
       },
-      "__schema8": {
+      "__schema9": {
         "type": "string",
         "description": "Stable machine-readable error code"
-      },
-      "__schema9": {
-        "type": ["string", "null"]
       },
       "__schema10": {
         "type": ["string", "null"]
       },
       "__schema11": {
+        "type": ["string", "null"]
+      },
+      "__schema12": {
         "type": "array",
         "items": {
           "$ref": "#/components/schemas/FieldError"
         }
       },
-      "__schema12": {
+      "__schema13": {
         "type": "string",
         "description": "Dot path to the field, e.g. `address.city`",
         "example": "email"
       },
-      "__schema13": {
+      "__schema14": {
         "type": "string",
         "example": "invalid_format"
       },
-      "__schema14": {
+      "__schema15": {
         "type": "string"
+      },
+      "__schema16": {
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+      },
+      "__schema17": {
+        "type": "string",
+        "enum": ["ready"]
+      },
+      "__schema18": {
+        "type": "string"
+      },
+      "__schema19": {
+        "type": "integer",
+        "minimum": -9007199254740991,
+        "maximum": 9007199254740991
       }
     }
   }

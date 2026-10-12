@@ -24,8 +24,10 @@ type ObjectSchema = z.ZodObject;
 
 export interface RouteResponse {
   readonly description: string;
-  /** Omitted for bodiless responses such as `204`. */
+  /** Omitted for bodiless responses such as `204`, and for binary responses. */
   readonly schema?: z.ZodType;
+  /** Binary response media types (file downloads); the handler streams the body. */
+  readonly binary?: readonly string[];
 }
 
 /**
@@ -46,6 +48,8 @@ export interface RouteDefinition {
     readonly query?: ObjectSchema;
     readonly headers?: ObjectSchema;
     readonly body?: z.ZodType;
+    /** Raw binary body (uploads): accepted media types; read as a stream, not JSON. */
+    readonly binaryBody?: readonly string[];
   };
   /** Exactly one 2xx status is the success response. */
   readonly responses: Readonly<Record<number, RouteResponse>>;

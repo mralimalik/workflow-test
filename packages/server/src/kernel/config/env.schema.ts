@@ -54,6 +54,10 @@ export const envSchema = z
     ENCRYPTION_MASTER_KEY_ID: z.string().min(1),
     COOKIE_DOMAIN: z.string().min(1),
 
+    /** Object storage. `local` writes to FILES_LOCAL_DIR (development, tests, single-node). */
+    FILES_STORAGE: z.enum(['local']).default('local'),
+    FILES_LOCAL_DIR: z.string().min(1).default('.data/files'),
+
     SMTP_HOST: z.string().min(1),
     SMTP_PORT: z.coerce.number().int().min(1).max(65535),
     SMTP_USER: z.string().optional(),

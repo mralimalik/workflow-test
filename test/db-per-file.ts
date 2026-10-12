@@ -1,4 +1,7 @@
 import { randomBytes } from 'node:crypto';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import path from 'node:path';
 
 import { Client } from 'pg';
 import { afterAll } from 'vitest';
@@ -27,9 +30,13 @@ async function admin<T>(fn: (client: Client) => Promise<T>): Promise<T> {
 await admin((c) => c.query(`CREATE DATABASE "${database}" TEMPLATE "${templateName(base)}"`));
 process.env['DATABASE_MIGRATION_URL'] = withDatabase(ownerUrl, database);
 process.env['DATABASE_URL'] = withDatabase(appUrl, database);
+// Local file storage in a throwaway directory.
+const filesDir = mkdtempSync(path.join(tmpdir(), 'attendra-files-'));
+process.env['FILES_LOCAL_DIR'] = filesDir;
 // Redis is shared; a unique key namespace keeps files from seeing each other's keys.
 process.env['REDIS_KEY_NAMESPACE'] = database.replace(/[^a-z0-9_-]/g, '');
 
 afterAll(async () => {
   await admin((c) => c.query(`DROP DATABASE IF EXISTS "${database}" WITH (FORCE)`));
+  rmSync(filesDir, { recursive: true, force: true });
 });

@@ -37,6 +37,7 @@ function implicitErrors(route: RouteDefinition): ErrorCode[] {
   const r = route.request;
   if (r && (r.body || r.query || r.params || r.headers)) codes.push('validation_failed');
   if (r?.body) codes.push('malformed_request', 'payload_too_large');
+  if (r?.binaryBody) codes.push('payload_too_large', 'unsupported_media_type');
   if (route.versioned) codes.push('version_mismatch', 'precondition_required');
   return codes;
 }
@@ -47,6 +48,13 @@ function responsesFor(route: RouteDefinition): ZodOpenApiResponsesObject {
     const isError = Number(status) >= 400;
     responses[status as StatusKey] = {
       description: response.description,
+      ...(response.binary
+        ? {
+            content: Object.fromEntries(
+              response.binary.map((t) => [t, { schema: { type: 'string', format: 'binary' } }]),
+            ),
+          }
+        : {}),
       ...(response.schema
         ? {
             content: {
@@ -92,6 +100,16 @@ function operationFor(route: RouteDefinition): ZodOpenApiOperationObject {
       : {}),
     ...(r?.body
       ? { requestBody: { required: true, content: { 'application/json': { schema: r.body } } } }
+      : {}),
+    ...(r?.binaryBody
+      ? {
+          requestBody: {
+            required: true,
+            content: Object.fromEntries(
+              r.binaryBody.map((t) => [t, { schema: { type: 'string', format: 'binary' } }]),
+            ),
+          },
+        }
       : {}),
     responses: responsesFor(route),
     ...(route.idempotent ? { 'x-idempotent': true } : {}),

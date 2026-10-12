@@ -31,6 +31,7 @@ describe('route registry invariants (ADR-0014, BACKEND.md §5)', () => {
     const declared = Object.keys(route.request?.params?.shape ?? {}).sort();
     expect(declared).toEqual(inPath);
     // Bodies only on methods that take one.
-    if (route.request?.body) expect(['POST', 'PUT', 'PATCH']).toContain(route.method);
+    if (route.request?.body || route.request?.binaryBody)
+      expect(['POST', 'PUT', 'PATCH']).toContain(route.method);
   });
 });
