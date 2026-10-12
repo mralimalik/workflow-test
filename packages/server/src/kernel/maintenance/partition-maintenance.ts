@@ -10,6 +10,7 @@ export const PARTITIONED_TABLES: readonly {
   drop?: { keep: string; stillNeeded?: string };
 }[] = [
   { table: 'audit_logs' },
+  { table: 'inbound_webhook_events' },
   { table: 'outbox_events', drop: { keep: '14 days', stillNeeded: 'published_at IS NULL' } },
 ];
 

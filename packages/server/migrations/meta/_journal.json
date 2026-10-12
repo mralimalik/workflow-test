@@ -29,6 +29,20 @@
       "when": 1791790802439,
       "tag": "0003_files",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1791791171921,
+      "tag": "0004_feature_flags",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791791214959,
+      "tag": "0005_inbound_webhook_events",
+      "breakpoints": true
     }
   ]
 }

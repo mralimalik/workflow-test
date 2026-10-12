@@ -1,6 +1,11 @@
 import { Module } from '@nestjs/common';
 
 import { AuditModule } from '../modules/audit/audit.public';
+import { FeatureFlagsModule } from '../modules/feature-flags/feature-flags.public';
+import {
+  InboundWebhooksModule,
+  InboundWebhooksWorkerModule,
+} from '../modules/inbound-webhooks/inbound-webhooks.public';
 import { IdempotencyModule } from '../modules/idempotency/idempotency.public';
 import { OutboxModule, OutboxRelayModule } from '../modules/outbox/outbox.public';
 import { CacheModule } from '../kernel/cache/cache.module';
@@ -29,6 +34,9 @@ export class WorkerModule {
         OutboxModule,
         OutboxRelayModule,
         IdempotencyModule,
+        FeatureFlagsModule,
+        InboundWebhooksModule,
+        InboundWebhooksWorkerModule,
         MaintenanceModule,
       ],
     };
