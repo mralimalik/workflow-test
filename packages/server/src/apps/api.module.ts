@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 
 import { AuditModule } from '../modules/audit/audit.public';
+import { AuthModule, SessionSocketAuthenticator } from '../modules/auth/auth.public';
+import { UsersModule } from '../modules/users/users.public';
 import {
   RealtimeGatewayModule,
   RealtimePublisherModule,
@@ -38,11 +40,17 @@ export class ApiModule {
         OutboxModule,
         IdempotencyModule,
         RealtimePublisherModule,
-        RealtimeGatewayModule,
         NotificationsModule,
         FeatureFlagsModule,
         InboundWebhooksModule,
         FilesModule,
+        UsersModule,
+        // Before RateLimitModule: its guard keys limits by the actor this guard resolves.
+        AuthModule,
+        RealtimeGatewayModule.register({
+          imports: [AuthModule],
+          authenticator: SessionSocketAuthenticator,
+        }),
         RateLimitModule,
         HealthModule,
       ],

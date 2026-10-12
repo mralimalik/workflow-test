@@ -3,7 +3,7 @@ import type { Readable } from 'node:stream';
 
 import { Inject, Injectable } from '@nestjs/common';
 import { IMAGE_CONTENT_TYPES } from '@attendra/contracts';
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { fileTypeFromBuffer } from 'file-type';
 
 import { AppConfig } from '../../../kernel/config/app-config';
@@ -99,6 +99,27 @@ export class FilesService {
       uploadedById: /^[0-9a-f-]{36}$/i.test(input.uploadedBy.id) ? input.uploadedBy.id : null,
     });
     return { fileId, upload: this.signedUrl(fileId, input.organizationId, 'put', UPLOAD_TTL_S) };
+  }
+
+  /** A ready file with this owner and purpose (visible in the caller's transaction), or null. */
+  async findOwned(
+    tx: Tx,
+    fileId: string,
+    owner: { ownerType: CreateUploadInput['ownerType']; ownerId: string; purpose: FilePurpose },
+  ): Promise<FileRow | null> {
+    const [row] = await tx
+      .select()
+      .from(files)
+      .where(
+        and(
+          eq(files.id, fileId),
+          eq(files.ownerType, owner.ownerType),
+          eq(files.ownerId, owner.ownerId),
+          eq(files.purpose, owner.purpose),
+          eq(files.status, 'ready'),
+        ),
+      );
+    return row ?? null;
   }
 
   /** A short-lived download URL for a ready file. */

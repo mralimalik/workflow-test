@@ -1,10 +1,11 @@
 import type { Server } from 'node:http';
 
-import { type Type } from '@nestjs/common';
+import { type INestApplicationContext, type Type } from '@nestjs/common';
 import { DiscoveryModule } from '@nestjs/core';
 import type { NestExpressApplication } from '@nestjs/platform-express';
 import { Test } from '@nestjs/testing';
 import { ApiModule } from '@attendra/server/apps/api.module';
+import { WorkerModule } from '@attendra/server/apps/worker.module';
 import { configureHttpApp } from '@attendra/server/apps/http-app';
 
 import { LogCapture } from './log-capture';
@@ -23,6 +24,11 @@ export interface TestApp {
 export interface TestAppOptions {
   /** Replace providers (by token) with test doubles, e.g. the realtime authenticator. */
   overrides?: { token: unknown; useValue: unknown }[];
+  /**
+   * Also run the worker (outbox relay, event consumers, email sending) in this process, so a
+   * test can follow a flow end to end, e.g. signup → verification email in Mailpit.
+   */
+  withWorker?: boolean;
 }
 
 export async function createTestApp(
@@ -45,5 +51,26 @@ export async function createTestApp(
   configureHttpApp(app);
   await app.init();
   const server: Server = app.getHttpServer();
-  return { app, server, logs, close: () => app.close() };
+
+  let worker: INestApplicationContext | undefined;
+  if (options.withWorker) {
+    let workerBuilder = Test.createTestingModule({
+      imports: [WorkerModule.forRoot({ logDestination: logs })],
+    });
+    for (const o of options.overrides ?? [])
+      workerBuilder = workerBuilder.overrideProvider(o.token).useValue(o.useValue);
+    const workerRef = await workerBuilder.compile();
+    await workerRef.init();
+    worker = workerRef;
+  }
+
+  return {
+    app,
+    server,
+    logs,
+    close: async () => {
+      await worker?.close();
+      await app.close();
+    },
+  };
 }

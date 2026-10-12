@@ -5,7 +5,7 @@
 | Goal | A secure, multi-tenant platform skeleton — auth, businesses, locations, opening hours, team and access, admin basics — fully tested, on which every later feature is built |
 | Order | **Part A: backend** (complete and verified) → **Part B: dashboard + admin UI** (starts after design references are shared and the design system is approved) |
 | Specs | [roadmap §Phase 0](../product/roadmap.md#phase-0--foundation), [ARCHITECTURE.md](../../ARCHITECTURE.md), [BACKEND.md](../../BACKEND.md), [FRONTEND.md](../../FRONTEND.md), feature docs linked per milestone |
-| Status | In progress — A4 |
+| Status | In progress — A5 |
 
 Library versions and features reviewed for this phase: [stack-review-2026-10.md](stack-review-2026-10.md).
 
@@ -187,15 +187,23 @@ are merged in order; each one is a reviewable PR.
 - TOTP enrol/confirm/disable + recovery codes; login step-up when MFA enabled or required.
 - Lockout and rate limits on login, reset and verification endpoints; login alert email
   for new device (optional setting).
-- `GET /auth/users/session` bootstrap (user, memberships summary, CSRF token).
-- Account profile: `GET/PATCH /me/account` (name, locale, timezone, avatar).
+- `GET /auth/users/session` bootstrap (user, session, CSRF token; the memberships summary
+  is added with memberships in A8).
+- Account profile: `GET/PATCH /auth/users/account` + avatar upload (name, phone, locale,
+  timezone, avatar). Moved from `/me/account`: `/v1/me` is the customer audience.
 
 **Done when**
-- [ ] API e2e covers every row of the auth endpoint table for the `users` realm.
-- [ ] Revoked session is rejected on the very next request (no TTL wait).
-- [ ] Cookie-authenticated state-changing request without a CSRF token → `403`.
-- [ ] Brute force: 11th login attempt in 15 min → `429`; OTP/link reuse → rejected.
-- [ ] Scenario report "signup → verify → login → enable 2FA → login with 2FA → reset password".
+- [x] API e2e covers every row of the auth endpoint table for the `users` realm
+  (`apps/api/test/auth.e2e.test.ts`, `auth-sessions.e2e.test.ts`; emails followed through
+  the worker into Mailpit).
+- [x] Revoked session is rejected on the very next request (no TTL wait) — including a
+  cache-warm session and a load racing the revoke (`packages/server/test/auth.int.test.ts`).
+- [x] Cookie-authenticated state-changing request without a CSRF token → `403`.
+- [x] Brute force: 11th login attempt in 15 min → `429` (per IP + account, and per account
+  across IPs); OTP/link reuse → rejected (verify link, reset link, MFA login token, TOTP
+  step, recovery code).
+- [x] Scenario report "signup → verify → login → enable 2FA → login with 2FA → reset password"
+  (`pnpm api:scenarios`, scenario `user-auth`).
 
 ### A5 · Platform admins (backend)
 
@@ -367,7 +375,7 @@ Plus visual checks (light/dark, one RTL locale) and axe accessibility checks on 
 | A1 Backend kernel | ✅ |
 | A2 Database foundation | ✅ |
 | A3 Platform modules | ✅ |
-| A4 User authentication | ☐ |
+| A4 User authentication | ✅ |
 | A5 Platform admins | ☐ |
 | A6 Organizations | ☐ |
 | A7 Locations and opening hours | ☐ |

@@ -342,10 +342,20 @@ Decision: [ADR-0005](docs/adr/0005-session-auth-with-token-refresh.md).
 | Media gateway | One-time stream token (60 s) minted by the api for a specific media session. |
 | Widget | Public widget key + origin check → short-lived conversation token (JWT, 30 min, bound to one conversation). |
 
+**Which credential a route needs** comes from its contract: `RouteDefinition.auth`
+(`none` or a realm), defaulting by audience (business → `user`, customer → `customer`,
+admin → `platform_admin`, others → `none`; `auth`-audience routes must declare it). One
+global `AuthGuard` (auth module) resolves the realm's cookie, enforces CSRF (§6.3) and
+puts the actor in the request context; it runs before the rate-limit guard, so limits can
+be keyed by the signed-in subject. `COOKIE_DOMAIN=localhost` produces host-only cookies.
+
 ### 6.2 Revocation and bans
 
-- Revoking a session deletes it from Redis and sets `revoked_at` in Postgres. Cookie
-  sessions are checked on every request → effect is immediate.
+- Revoking a session sets `revoked_at` in Postgres and evicts the Redis copy, leaving a
+  short `revoked-sid` tombstone so a cache load that read the row just before the revoke
+  cannot write it back. Cookie sessions are checked on every request → effect is
+  immediate. A cache miss re-checks the row and the subject (status, `session_version`).
+  `last_seen_at` / idle expiry are written at most once a minute.
 - Access JWTs carry the session id (`sid`); the guard checks a Redis revocation set for
   `sid` (O(1)), so revoked mobile sessions are cut within one request, not at token
   expiry.
@@ -564,8 +574,8 @@ reachable; media also checks provider reachability). Used by load balancers.
 
 | Namespace | Key scope | Contents | TTL | Invalidated by |
 |---|---|---|---|---|
-| `session` | session hash | Session subject, realm, version, expiry, CSRF token | session idle timeout | logout, revoke, ban, password change |
-| `revoked-sid` | session id | Revocation marker for JWT clients | access token TTL | revoke, ban |
+| `session` | session token hash | Session subject, realm, version, expiry, CSRF token, MFA state | until idle/absolute expiry | logout, revoke, ban, password change (evict); MFA change (refresh) |
+| `revoked-sid` | session token hash (cookies) / session id (JWT clients) | Revocation marker: blocks re-caching a revoked cookie session; revocation check for JWT clients | 5 min (cookies) / access token TTL (JWT) | revoke, ban |
 | `perm` | membership id | Resolved permission set + location scope | 10 min | `membership.*`, `role.updated` |
 | `org-settings` | organization id | Effective organization settings + entitlements | 10 min | `organization.updated`, `subscription.changed`, `entitlements.changed` |
 | `loc-settings` | location id | Effective location settings (incl. capabilities, timezone, locales) | 10 min | `location.updated`, `location.capability_changed`, org settings events |
@@ -587,7 +597,8 @@ Sliding-window counters per policy:
 
 | Policy | Limit (default) | Key |
 |---|---|---|
-| `auth.login` | 10 / 15 min | IP + identifier |
+| `auth.login` | 10 / 15 min | IP + identifier (email, or the MFA login token, or the signed-in subject) |
+| `auth.link` | 5 / hour | IP + identifier (email, or the link token, or the signed-in subject) |
 | `auth.otp.send` | 5 / hour, 1 / 30 s | destination; also IP |
 | `auth.otp.verify` | 5 attempts per challenge | challenge id |
 | `public.write` | 30 / min | IP + widget key |
@@ -634,6 +645,8 @@ Sliding-window counters per policy:
 | `usage.recorded` | billing | usage reporting |
 | `integration.connected` / `.disconnected` / `.errored` | integrations | calendar-sync, notifications |
 | `notification.status_changed` | notifications | realtime (message status) |
+| `user.signed_up`, `user.email_verification_requested`, `auth.password_reset_requested`, `auth.login_succeeded` | auth | auth-notifications (verification / reset / new-device emails) |
+| `user.email_verified`, `auth.password_changed`, `auth.mfa_changed`, `session.revoked` | auth | audit trail today; consumers later (e.g. security notices) |
 
 ### 10.3 Queues and jobs
 
@@ -652,7 +665,7 @@ Sliding-window counters per policy:
 | `billing` | `sync-stripe-object`, `dunning-transition` | Stripe webhooks / repeatable | |
 | `realtime` | `fanout` | most events | emits Socket.IO events to org/location rooms |
 | `webhooks-out` | `deliver` | events | signed, retries with exponential backoff up to 24 h |
-| `maintenance` | `retention-purge`, `partition-maintain`, `idempotency-cleanup`, `session-cleanup` | Job Schedulers (nightly) | one processor dispatching `@MaintenanceTaskProvider` tasks by name; platform scope |
+| `maintenance` | `retention-purge`, `partition-maintain`, `idempotency-cleanup`, `session-cleanup`, `challenge-cleanup` | Job Schedulers (nightly) | one processor dispatching `@MaintenanceTaskProvider` tasks by name; platform scope |
 | `inbound-webhooks` | `process` | webhook received | dispatches to `@HandlesWebhooks(provider)` handlers |
 | `dead-letter` | (copies of jobs that exhausted retries) | `AppProcessor` | kept for inspection and replay; logged at `error` |
 
@@ -665,8 +678,9 @@ dead-letter state with an alert; every processor is idempotent.
 
 Socket.IO namespace `/business` (Redis Streams adapter), authenticated during the handshake
 (namespace middleware: unauthenticated clients never connect) through the
-`SocketAuthenticator` port; room joins go through the `RealtimeScopeChecker` port. Both
-default to deny-all until the auth (A4) and access (A8) modules provide them.
+`SocketAuthenticator` port (the user session cookie, from the auth module); room joins go
+through the `RealtimeScopeChecker` port, deny-all until the access module (A8) provides it.
+Implementations are passed to `RealtimeGatewayModule.register()` in the composition root.
 Rooms: `org:{orgId}`, `loc:{locationId}` (joined only if in scope). Server emits small
 `{ type, id, locationId }` notifications; clients invalidate the matching React Query
 keys and refetch through the REST API (no data duplication over the socket). Live call
@@ -714,6 +728,10 @@ never on `title` or `detail`.
 - Configuration from environment variables only, validated with a Zod schema at boot;
   the process refuses to start on invalid config. Typed `AppConfig` injected via DI.
   Template: [.env.example](.env.example).
+- One-time secrets and keyed hashes use HKDF-derived, purpose-specific keys from
+  `SESSION_SECRET` (`kernel/crypto/secrets.ts`); envelope encryption is
+  `kernel/crypto/envelope.ts` (versioned format with the master key id, AAD binding the
+  ciphertext to its record).
 - **Provider credentials** are tenant/platform data, not env config: stored in
   `provider_credentials.secret_ciphertext` using **envelope encryption** — a random
   per-record data key encrypts the secret (AES-256-GCM); the data key is encrypted with

@@ -5,6 +5,7 @@ import type { DestinationStream } from 'pino';
 
 import { AppConfig } from './config/app-config';
 import { envSchema } from './config/env.schema';
+import { CryptoModule } from './crypto/crypto.module';
 import { buildLoggerParams, type AppName } from './logging/logger.options';
 import { Clock, SystemClock } from './time/clock';
 
@@ -33,6 +34,7 @@ export class KernelModule {
           cache: true,
           validationSchema: envSchema,
         }),
+        CryptoModule,
         LoggerModule.forRootAsync({
           inject: [ConfigService],
           useFactory: (config: AppConfig) =>

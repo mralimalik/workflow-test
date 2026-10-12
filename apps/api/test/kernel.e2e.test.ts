@@ -18,6 +18,8 @@ const echoRoute = defineRoute({
   method: 'POST',
   path: '/v1/test/widgets/{widgetId}',
   audience: 'business',
+  // Pipeline tests run without a session; authentication has its own suites.
+  auth: 'none',
   summary: 'Echo',
   tags: ['Test'],
   request: {
@@ -37,6 +39,7 @@ const failRoute = defineRoute({
   method: 'GET',
   path: '/v1/test/fail',
   audience: 'business',
+  auth: 'none',
   summary: 'Fail',
   tags: ['Test'],
   responses: { 200: { description: 'Never', schema: z.object({ ok: z.boolean() }) } },

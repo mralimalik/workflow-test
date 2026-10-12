@@ -1,4 +1,4 @@
-import { Global, Module } from '@nestjs/common';
+import { type DynamicModule, Global, Module, type ModuleMetadata, type Type } from '@nestjs/common';
 
 import { BusinessGateway } from './api/business.gateway';
 import {
@@ -6,6 +6,8 @@ import {
   denyAllScopes,
   REALTIME_SCOPE_CHECKER,
   SOCKET_AUTHENTICATOR,
+  type RealtimeScopeChecker,
+  type SocketAuthenticator,
 } from './application/ports';
 import { RealtimeFanoutProcessor } from './application/realtime-fanout.processor';
 import { RealtimePublisher } from './application/realtime-publisher';
@@ -15,16 +17,33 @@ import { RealtimePublisher } from './application/realtime-publisher';
 @Module({ providers: [RealtimePublisher], exports: [RealtimePublisher] })
 export class RealtimePublisherModule {}
 
+export interface RealtimeGatewayOptions {
+  /** Modules exporting the implementations below. */
+  imports?: ModuleMetadata['imports'];
+  authenticator?: Type<SocketAuthenticator>;
+  scopeChecker?: Type<RealtimeScopeChecker>;
+}
+
 /**
  * Gateway + fanout (api process). Authenticator and scope checker default to deny-all; the
- * auth (A4) and access (A8) modules override them.
+ * composition root passes the auth (A4) and access (A8) implementations.
  */
-@Module({
-  providers: [
-    BusinessGateway,
-    RealtimeFanoutProcessor,
-    { provide: SOCKET_AUTHENTICATOR, useValue: denyAllAuthenticator },
-    { provide: REALTIME_SCOPE_CHECKER, useValue: denyAllScopes },
-  ],
-})
-export class RealtimeGatewayModule {}
+@Module({})
+export class RealtimeGatewayModule {
+  static register(options: RealtimeGatewayOptions = {}): DynamicModule {
+    return {
+      module: RealtimeGatewayModule,
+      imports: options.imports ?? [],
+      providers: [
+        BusinessGateway,
+        RealtimeFanoutProcessor,
+        options.authenticator
+          ? { provide: SOCKET_AUTHENTICATOR, useExisting: options.authenticator }
+          : { provide: SOCKET_AUTHENTICATOR, useValue: denyAllAuthenticator },
+        options.scopeChecker
+          ? { provide: REALTIME_SCOPE_CHECKER, useExisting: options.scopeChecker }
+          : { provide: REALTIME_SCOPE_CHECKER, useValue: denyAllScopes },
+      ],
+    };
+  }
+}

@@ -1,6 +1,9 @@
 import { Module } from '@nestjs/common';
 
 import { AuditModule } from '../modules/audit/audit.public';
+import { AuthWorkerModule } from '../modules/auth/auth.public';
+import { UsersModule } from '../modules/users/users.public';
+import { FilesModule } from '../modules/files/files.public';
 import { RealtimePublisherModule } from '../modules/realtime/realtime.public';
 import {
   NotificationsModule,
@@ -45,6 +48,9 @@ export class WorkerModule {
         FeatureFlagsModule,
         InboundWebhooksModule,
         InboundWebhooksWorkerModule,
+        FilesModule,
+        UsersModule,
+        AuthWorkerModule,
         MaintenanceModule,
       ],
     };

@@ -53,6 +53,8 @@ export const envSchema = z
     ENCRYPTION_MASTER_KEY: key32,
     ENCRYPTION_MASTER_KEY_ID: z.string().min(1),
     COOKIE_DOMAIN: z.string().min(1),
+    /** Breached-password check: `hibp` (k-anonymity API + local list) or `local` list only. */
+    PASSWORD_BREACH_CHECK: z.enum(['hibp', 'local']).default('hibp'),
 
     /** Object storage. `local` writes to FILES_LOCAL_DIR (development, tests, single-node). */
     FILES_STORAGE: z.enum(['local']).default('local'),
@@ -80,6 +82,8 @@ export const envSchema = z
     if (Buffer.from(env.ENCRYPTION_MASTER_KEY, 'base64').every((b) => b === 0)) {
       localOnly('ENCRYPTION_MASTER_KEY', 'All-zero master key');
     }
+    if (env.PASSWORD_BREACH_CHECK !== 'hibp')
+      localOnly('PASSWORD_BREACH_CHECK', 'The breached-password API must be on');
     for (const key of [
       'API_PUBLIC_URL',
       'DASHBOARD_URL',

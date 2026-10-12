@@ -55,6 +55,8 @@ organizations through `memberships`. **[base]**
 | `last_login_at` | timestamptz | yes | | |
 | `mfa_required` | boolean | no | `false` | true if any organization they belong to requires MFA (denormalized, maintained by access module) |
 
+Constraints: UNIQUE `email`; `CHECK (status IN …)`; `phone_e164` matches E.164; `session_version >= 1`.
+
 ## customers
 
 End customers. **One global identity across all organizations**
@@ -118,7 +120,10 @@ holds only its hash. Hot copy cached in Redis ([BACKEND §9.2](../../BACKEND.md#
 | `revoked_at` | timestamptz | yes | | |
 | `revoke_reason` | text | yes | | `logout` \| `logout_all` \| `password_changed` \| `banned` \| `admin` \| `expired` \| `reuse_detected` |
 
-Indexes: `(subject_type, subject_id) WHERE revoked_at IS NULL`; `(absolute_expires_at)` for cleanup.
+Indexes: UNIQUE `token_hash`; `(subject_type, subject_id) WHERE revoked_at IS NULL`;
+`(absolute_expires_at)` for cleanup. Checks: `revoked_at` and `revoke_reason` are set
+together; `idle_expires_at <= absolute_expires_at`. The CSRF token handed to the client is
+`base64url(csrf_secret)`. Sessions ended more than 30 days ago are deleted nightly.
 
 ## refresh_tokens
 
@@ -154,13 +159,16 @@ invitation acceptance for new users, phone change verification. One table, one f
 | `secret_hash` | bytea | no | | HMAC-SHA-256 of code/link token with server pepper |
 | `attempts` | smallint | no | `0` | |
 | `max_attempts` | smallint | no | `5` | |
-| `expires_at` | timestamptz | no | | OTP 10 min, link 30 min, reset 1 h |
+| `expires_at` | timestamptz | no | | OTP 10 min; links: verify email 24 h, password reset 30 min |
 | `consumed_at` | timestamptz | yes | | |
-| `organization_id` | uuid | yes | | context (e.g. widget of org X) for branding the message; not RLS-scoped |
+| `context_organization_id` | uuid | yes | | context (e.g. widget of org X) for branding the message. Named so it is not mistaken for a tenant key: this table is global and has no RLS |
 | `ip` | inet | yes | | |
 | `context` | jsonb | no | `'{}'` | e.g. `{ "conversationId": "..." }` for widget identification |
 
-Indexes: `(destination, purpose, created_at DESC)`; `(expires_at)` for cleanup.
+Indexes: UNIQUE `secret_hash` `WHERE kind = 'link'` (links are looked up by hash);
+`(destination, purpose, created_at DESC)`; `(realm, subject_id, purpose)`; `(expires_at)`
+for cleanup (deleted 7 days after expiry). Links are consumed by one conditional `UPDATE`
+(single use under concurrency); `max_attempts` is 1 for links.
 
 ## mfa_factors
 
@@ -171,13 +179,15 @@ Indexes: `(destination, purpose, created_at DESC)`; `(expires_at)` for cleanup.
 | `subject_type` | text | no | | `platform_admin` \| `user` |
 | `subject_id` | uuid | no | | |
 | `type` | text | no | | `totp` \| `recovery_codes` (WebAuthn later) |
-| `secret_ciphertext` | bytea | no | | envelope-encrypted TOTP secret or hashed recovery codes |
+| `secret_ciphertext` | bytea | no | | TOTP: envelope-encrypted secret, AAD `mfa_factors:<id>`. Recovery codes: concatenated 32-byte HMACs of the (normalized) codes; a used code's HMAC is removed |
 | `label` | text | yes | | |
 | `verified_at` | timestamptz | yes | | factor is active only when verified |
 | `last_used_at` | timestamptz | yes | | |
 | `last_used_step` | bigint | yes | | TOTP replay protection |
 
-UNIQUE `(subject_type, subject_id, type) WHERE verified_at IS NOT NULL AND type = 'totp'`.
+UNIQUE `(subject_type, subject_id, type) WHERE verified_at IS NOT NULL` (one active TOTP
+and one active recovery-code set per subject). An unverified TOTP factor expires 15 minutes
+after enrolment starts; starting again replaces it.
 
 ## oauth_accounts
 

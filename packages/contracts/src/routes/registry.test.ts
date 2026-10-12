@@ -33,5 +33,7 @@ describe('route registry invariants (ADR-0014, BACKEND.md §5)', () => {
     // Bodies only on methods that take one.
     if (route.request?.body || route.request?.binaryBody)
       expect(['POST', 'PUT', 'PATCH']).toContain(route.method);
+    // Auth endpoints say explicitly who may call them; other audiences have defaults.
+    if (route.audience === 'auth') expect(route.auth).toBeDefined();
   });
 });

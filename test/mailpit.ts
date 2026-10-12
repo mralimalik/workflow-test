@@ -13,10 +13,12 @@ export interface MailpitMessage {
 export async function waitForEmail(
   to: string,
   timeoutMs = 10_000,
+  options: { subject?: string } = {},
 ): Promise<{ summary: MailpitMessage; text: string; html: string }> {
   const deadline = Date.now() + timeoutMs;
+  const query = `to:"${to}"${options.subject ? ` subject:"${options.subject}"` : ''}`;
   while (Date.now() < deadline) {
-    const res = await fetch(`${base}/api/v1/search?query=${encodeURIComponent(`to:"${to}"`)}`);
+    const res = await fetch(`${base}/api/v1/search?query=${encodeURIComponent(query)}`);
     const body = (await res.json()) as { messages: MailpitMessage[] };
     const summary = body.messages[0];
     if (summary) {

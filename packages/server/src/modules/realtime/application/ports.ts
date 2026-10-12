@@ -4,7 +4,7 @@ import type { Actor } from '../../../kernel/context/request-context';
 
 /**
  * Authenticates a socket handshake (BACKEND.md §10.4). The user-session implementation is
- * provided by the auth module (A4); until then every handshake is refused.
+ * the auth module's `SessionSocketAuthenticator`; without one every handshake is refused.
  */
 export interface SocketAuthenticator {
   authenticate(headers: IncomingHttpHeaders): Promise<Actor | null>;

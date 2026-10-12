@@ -29,6 +29,20 @@ export const ERROR_CODES = {
   unauthenticated: { status: 401, title: 'Authentication is required' },
   forbidden: { status: 403, title: 'You are not allowed to do this' },
   csrf_token_invalid: { status: 403, title: 'Missing or invalid CSRF token' },
+  invalid_credentials: { status: 401, title: 'The email or password is incorrect' },
+  session_expired: { status: 401, title: 'Your session has ended; sign in again' },
+  mfa_code_invalid: { status: 401, title: 'The verification code is incorrect' },
+  reauthentication_failed: { status: 403, title: 'Your current password is incorrect' },
+  account_disabled: { status: 403, title: 'This account is disabled' },
+  email_not_verified: { status: 403, title: 'Verify your email address first' },
+  mfa_enrollment_required: {
+    status: 403,
+    title: 'Set up two-factor authentication to continue',
+  },
+  token_invalid: { status: 400, title: 'The link or code is invalid or has expired' },
+  email_taken: { status: 409, title: 'An account with this email already exists' },
+  mfa_already_enabled: { status: 409, title: 'Two-factor authentication is already enabled' },
+  mfa_not_enabled: { status: 409, title: 'Two-factor authentication is not enabled' },
   // Providers
   provider_unavailable: { status: 502, title: 'An upstream provider is unavailable' },
 } as const satisfies Record<string, { status: number; title: string }>;

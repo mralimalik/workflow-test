@@ -72,78 +72,553 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/v1/auth/users/signup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create a user account and sign in
+         * @description Creates the user with an unverified email, sends the verification link and starts a session (FR-AUTH-001).
+         */
+        post: operations["auth.users.signup"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/users/login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Sign in with email and password
+         * @description Returns a session, or `mfa_required` with a single-use token when two-factor authentication is on.
+         */
+        post: operations["auth.users.login"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/users/mfa/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Complete sign-in with a TOTP or recovery code */
+        post: operations["auth.users.mfa.verify"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/users/session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Current user, session and CSRF token */
+        get: operations["auth.users.session"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/users/logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sign out (revoke the current session) */
+        post: operations["auth.users.logout"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/users/sessions": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** List active sessions (devices) */
+        get: operations["auth.users.sessions.list"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/users/sessions/{sessionId}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        post?: never;
+        /** Sign out one session */
+        delete: operations["auth.users.sessions.revoke"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/users/sessions/revoke-others": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Sign out every other session */
+        post: operations["auth.users.sessions.revoke_others"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/users/password/forgot": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Email a password reset link
+         * @description Always accepted, whether or not the account exists (no account enumeration).
+         */
+        post: operations["auth.users.password.forgot"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/users/password/reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Set a new password with a reset link token
+         * @description Single use. Signs out every session of the account.
+         */
+        post: operations["auth.users.password.reset"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/users/password/change": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Change password (requires the current one)
+         * @description Signs out every other session.
+         */
+        post: operations["auth.users.password.change"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/users/email/verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Confirm the email address with the link token */
+        post: operations["auth.users.email.verify"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/users/email/resend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Send the verification link again */
+        post: operations["auth.users.email.resend"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/users/mfa/totp/enroll": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Start TOTP setup (requires the password)
+         * @description Returns a new secret to add to an authenticator app; confirm it with a code.
+         */
+        post: operations["auth.users.mfa.totp.enroll"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/users/mfa/totp/confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Activate TOTP with a code from the app
+         * @description Returns 10 single-use recovery codes. They are shown only once.
+         */
+        post: operations["auth.users.mfa.totp.confirm"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/users/mfa/totp/disable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Turn off TOTP (requires the password) */
+        post: operations["auth.users.mfa.totp.disable"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/v1/auth/users/account": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Get my profile */
+        get: operations["account.get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Update my profile
+         * @description Fields left out stay unchanged; `null` clears an optional field. To change the avatar, upload it first (`account.avatar.upload`) and pass the file id.
+         */
+        patch: operations["account.update"];
+        trace?: never;
+    };
+    "/v1/auth/users/account/avatar": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Get a signed URL to upload a new avatar
+         * @description PUT the image bytes to `upload.url`, then PATCH the account with `avatarFileId`.
+         */
+        post: operations["account.avatar.upload"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** @example owner@example.com */
+        Email: components["schemas"]["__schema1"];
+        /** Format: password */
+        Password: string;
+        /** @example en-GB */
+        Locale: components["schemas"]["__schema2"];
+        /** @example Europe/Berlin */
+        TimeZone: string;
+        /** @example +923001234567 */
+        PhoneE164: string;
         __schema0: string;
+        __schema1: string;
+        __schema2: string;
+        __schema3: string;
+        __schema4: string;
+        __schema5: string;
+        __schema6: string | null;
+        __schema7: components["schemas"]["PhoneE164"] | null;
+        __schema8: components["schemas"]["Locale"];
+        __schema9: components["schemas"]["TimeZone"] | null;
+        __schema10: string | null;
         HealthResult: {
-            status: components["schemas"]["__schema1"];
-            info?: components["schemas"]["__schema2"];
-            error?: components["schemas"]["__schema4"];
-            details: components["schemas"]["__schema5"];
+            status: components["schemas"]["__schema11"];
+            info?: components["schemas"]["__schema12"];
+            error?: components["schemas"]["__schema14"];
+            details: components["schemas"]["__schema15"];
         };
         /** @description RFC 9457 problem details */
         Problem: {
-            type: components["schemas"]["__schema6"];
-            title: components["schemas"]["__schema7"];
-            status: components["schemas"]["__schema8"];
-            code: components["schemas"]["__schema9"];
-            detail: components["schemas"]["__schema10"];
-            requestId: components["schemas"]["__schema11"];
-            errors?: components["schemas"]["__schema12"];
+            type: components["schemas"]["__schema16"];
+            title: components["schemas"]["__schema17"];
+            status: components["schemas"]["__schema18"];
+            code: components["schemas"]["__schema19"];
+            detail: components["schemas"]["__schema20"];
+            requestId: components["schemas"]["__schema21"];
+            errors?: components["schemas"]["__schema22"];
         };
         FieldError: {
-            path: components["schemas"]["__schema13"];
-            code: components["schemas"]["__schema14"];
-            message: components["schemas"]["__schema15"];
+            path: components["schemas"]["__schema23"];
+            code: components["schemas"]["__schema24"];
+            message: components["schemas"]["__schema25"];
         };
         FileUploadResult: {
-            id: components["schemas"]["__schema16"];
-            status: components["schemas"]["__schema17"];
-            contentType: components["schemas"]["__schema18"];
-            sizeBytes: components["schemas"]["__schema19"];
+            id: components["schemas"]["__schema26"];
+            status: components["schemas"]["__schema27"];
+            contentType: components["schemas"]["__schema28"];
+            sizeBytes: components["schemas"]["__schema29"];
+        };
+        UserSession: {
+            user: components["schemas"]["CurrentUser"];
+            session: components["schemas"]["SessionInfo"];
+            csrfToken: components["schemas"]["__schema44"];
+            mfaEnrollmentRequired: components["schemas"]["__schema45"];
+        };
+        CurrentUser: {
+            id: components["schemas"]["__schema30"];
+            email: components["schemas"]["__schema31"];
+            emailVerified: components["schemas"]["__schema32"];
+            firstName: components["schemas"]["__schema33"];
+            lastName: components["schemas"]["__schema34"];
+            phoneE164: components["schemas"]["__schema35"];
+            locale: components["schemas"]["__schema36"];
+            timezone: components["schemas"]["__schema37"];
+            avatar: components["schemas"]["__schema38"];
+            mfaEnabled: components["schemas"]["__schema40"];
+            createdAt: components["schemas"]["Timestamp"];
+        };
+        /**
+         * Format: date-time
+         * @example 2026-10-11T14:30:00Z
+         */
+        Timestamp: string;
+        SessionInfo: {
+            id: components["schemas"]["__schema41"];
+            authMethod: components["schemas"]["__schema42"];
+            mfaVerified: components["schemas"]["__schema43"];
+            createdAt: components["schemas"]["Timestamp"];
+            idleExpiresAt: components["schemas"]["Timestamp"];
+            absoluteExpiresAt: components["schemas"]["Timestamp"];
+        };
+        LoginResult: components["schemas"]["__schema46"] | components["schemas"]["__schema47"];
+        SessionListItem: {
+            id: components["schemas"]["__schema48"];
+            current: components["schemas"]["__schema49"];
+            authMethod: components["schemas"]["__schema50"];
+            deviceLabel: components["schemas"]["__schema51"];
+            ip: components["schemas"]["__schema52"];
+            createdAt: components["schemas"]["Timestamp"];
+            lastSeenAt: components["schemas"]["Timestamp"];
+        };
+        TotpEnrollment: {
+            secret: components["schemas"]["__schema53"];
+            otpauthUrl: components["schemas"]["__schema54"];
+            expiresAt: components["schemas"]["Timestamp"];
+        };
+        PendingUpload: {
+            fileId: components["schemas"]["__schema56"];
+            upload: components["schemas"]["__schema57"];
         };
         /** @enum {string} */
-        __schema1: "ok" | "error" | "shutting_down" | "degraded";
-        __schema2: {
-            [key: string]: components["schemas"]["__schema3"];
+        __schema11: "ok" | "error" | "shutting_down" | "degraded";
+        __schema12: {
+            [key: string]: components["schemas"]["__schema13"];
         };
-        __schema3: {
+        __schema13: {
             /** @enum {string} */
             status: "up" | "down" | "degraded";
         } & {
             [key: string]: unknown;
         };
-        __schema4: {
-            [key: string]: components["schemas"]["__schema3"];
+        __schema14: {
+            [key: string]: components["schemas"]["__schema13"];
         };
-        __schema5: {
-            [key: string]: components["schemas"]["__schema3"];
+        __schema15: {
+            [key: string]: components["schemas"]["__schema13"];
         };
         /** Format: uri */
-        __schema6: string;
-        __schema7: string;
-        __schema8: number;
+        __schema16: string;
+        __schema17: string;
+        __schema18: number;
         /** @description Stable machine-readable error code */
-        __schema9: string;
-        __schema10: string | null;
-        __schema11: string | null;
-        __schema12: components["schemas"]["FieldError"][];
+        __schema19: string;
+        __schema20: string | null;
+        __schema21: string | null;
+        __schema22: components["schemas"]["FieldError"][];
         /**
          * @description Dot path to the field, e.g. `address.city`
          * @example email
          */
-        __schema13: string;
+        __schema23: string;
         /** @example invalid_format */
-        __schema14: string;
-        __schema15: string;
+        __schema24: string;
+        __schema25: string;
         /** Format: uuid */
-        __schema16: string;
+        __schema26: string;
         /** @enum {string} */
-        __schema17: "ready";
-        __schema18: string;
-        __schema19: number;
+        __schema27: "ready";
+        __schema28: string;
+        __schema29: number;
+        /** Format: uuid */
+        __schema30: string;
+        /** Format: email */
+        __schema31: string;
+        __schema32: boolean;
+        __schema33: string;
+        __schema34: string | null;
+        __schema35: string | null;
+        __schema36: string;
+        __schema37: string | null;
+        /** @description Short-lived download URL; refetch the account when it expires */
+        __schema38: components["schemas"]["__schema39"] | null;
+        __schema39: {
+            /** Format: uuid */
+            fileId: string;
+            /** Format: uri */
+            url: string;
+            expiresAt: components["schemas"]["Timestamp"];
+        };
+        __schema40: boolean;
+        /** Format: uuid */
+        __schema41: string;
+        /** @enum {string} */
+        __schema42: "password" | "otp_sms" | "otp_email" | "otp_whatsapp" | "magic_link" | "oauth_google" | "refresh";
+        __schema43: boolean;
+        /** @description Send as `X-CSRF-Token` on every state-changing request of this session */
+        __schema44: string;
+        /** @description An organization requires 2FA: business endpoints refuse until TOTP is set up */
+        __schema45: boolean;
+        __schema46: {
+            user: components["schemas"]["CurrentUser"];
+            session: components["schemas"]["SessionInfo"];
+            csrfToken: components["schemas"]["__schema44"];
+            mfaEnrollmentRequired: components["schemas"]["__schema45"];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            status: "authenticated";
+        };
+        __schema47: {
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            status: "mfa_required";
+            /** @description Single-use; pass to `mfa/verify` within 5 minutes */
+            mfaToken: string;
+            methods: ("totp" | "recovery_code")[];
+            expiresAt: components["schemas"]["Timestamp"];
+        };
+        /** Format: uuid */
+        __schema48: string;
+        __schema49: boolean;
+        /** @enum {string} */
+        __schema50: "password" | "otp_sms" | "otp_email" | "otp_whatsapp" | "magic_link" | "oauth_google" | "refresh";
+        __schema51: string | null;
+        __schema52: string | null;
+        __schema53: string;
+        __schema54: string;
+        __schema55: string;
+        /** Format: uuid */
+        __schema56: string;
+        __schema57: {
+            /** Format: uri */
+            url: string;
+            /** @constant */
+            method: "PUT";
+            expiresAt: components["schemas"]["Timestamp"];
+        };
     };
     responses: never;
     parameters: never;
@@ -343,6 +818,1378 @@ export interface operations {
             };
             /** @description `not_found` — The resource was not found */
             404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `validation_failed` — The request is invalid */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `internal_error` — Something went wrong */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    "auth.users.signup": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    email: components["schemas"]["Email"];
+                    password: components["schemas"]["Password"];
+                    firstName: string;
+                    lastName?: string;
+                    locale?: components["schemas"]["Locale"];
+                    timezone?: components["schemas"]["TimeZone"];
+                };
+            };
+        };
+        responses: {
+            /** @description Signed up and signed in */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserSession"];
+                };
+            };
+            /** @description `malformed_request` — The request could not be parsed */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `email_taken` — An account with this email already exists */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `payload_too_large` — The request body is too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `validation_failed` — The request is invalid */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `rate_limited` — Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `internal_error` — Something went wrong */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    "auth.users.login": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    email: components["schemas"]["Email"];
+                    password: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Signed in, or second factor needed */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LoginResult"];
+                };
+            };
+            /** @description `malformed_request` — The request could not be parsed */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `invalid_credentials` — The email or password is incorrect */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `account_disabled` — This account is disabled */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `payload_too_large` — The request body is too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `validation_failed` — The request is invalid */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `rate_limited` — Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `internal_error` — Something went wrong */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    "auth.users.mfa.verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    mfaToken: string;
+                    code: components["schemas"]["__schema3"];
+                } | {
+                    mfaToken: string;
+                    recoveryCode: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Signed in */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserSession"];
+                };
+            };
+            /** @description `malformed_request` — The request could not be parsed; `token_invalid` — The link or code is invalid or has expired */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `mfa_code_invalid` — The verification code is incorrect */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `account_disabled` — This account is disabled */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `payload_too_large` — The request body is too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `validation_failed` — The request is invalid */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `rate_limited` — Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `internal_error` — Something went wrong */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    "auth.users.session": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description The current session */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["UserSession"];
+                };
+            };
+            /** @description `unauthenticated` — Authentication is required; `session_expired` — Your session has ended; sign in again */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `internal_error` — Something went wrong */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    "auth.users.logout": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Signed out */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `unauthenticated` — Authentication is required; `session_expired` — Your session has ended; sign in again */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `csrf_token_invalid` — Missing or invalid CSRF token */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `internal_error` — Something went wrong */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    "auth.users.sessions.list": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Active sessions, most recent first */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        data: components["schemas"]["SessionListItem"][];
+                    };
+                };
+            };
+            /** @description `unauthenticated` — Authentication is required; `session_expired` — Your session has ended; sign in again */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `internal_error` — Something went wrong */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    "auth.users.sessions.revoke": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                sessionId: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Revoked */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `unauthenticated` — Authentication is required; `session_expired` — Your session has ended; sign in again */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `csrf_token_invalid` — Missing or invalid CSRF token */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `not_found` — The resource was not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `validation_failed` — The request is invalid */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `internal_error` — Something went wrong */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    "auth.users.sessions.revoke_others": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Revoked */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        revoked: number;
+                    };
+                };
+            };
+            /** @description `unauthenticated` — Authentication is required; `session_expired` — Your session has ended; sign in again */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `csrf_token_invalid` — Missing or invalid CSRF token */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `internal_error` — Something went wrong */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    "auth.users.password.forgot": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    email: components["schemas"]["Email"];
+                };
+            };
+        };
+        responses: {
+            /** @description If the account exists, a link was sent */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `malformed_request` — The request could not be parsed */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `payload_too_large` — The request body is too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `validation_failed` — The request is invalid */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `rate_limited` — Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `internal_error` — Something went wrong */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    "auth.users.password.reset": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    token: components["schemas"]["__schema4"];
+                    password: components["schemas"]["Password"];
+                };
+            };
+        };
+        responses: {
+            /** @description Password changed */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `malformed_request` — The request could not be parsed; `token_invalid` — The link or code is invalid or has expired */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `payload_too_large` — The request body is too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `validation_failed` — The request is invalid */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `rate_limited` — Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `internal_error` — Something went wrong */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    "auth.users.password.change": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    currentPassword: string;
+                    newPassword: components["schemas"]["Password"];
+                };
+            };
+        };
+        responses: {
+            /** @description Password changed */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `malformed_request` — The request could not be parsed */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `unauthenticated` — Authentication is required; `session_expired` — Your session has ended; sign in again */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `csrf_token_invalid` — Missing or invalid CSRF token; `reauthentication_failed` — Your current password is incorrect */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `payload_too_large` — The request body is too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `validation_failed` — The request is invalid */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `rate_limited` — Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `internal_error` — Something went wrong */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    "auth.users.email.verify": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    token: components["schemas"]["__schema4"];
+                };
+            };
+        };
+        responses: {
+            /** @description Email verified */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `malformed_request` — The request could not be parsed; `token_invalid` — The link or code is invalid or has expired */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `payload_too_large` — The request body is too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `validation_failed` — The request is invalid */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `rate_limited` — Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `internal_error` — Something went wrong */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    "auth.users.email.resend": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Sent (no-op when already verified) */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `unauthenticated` — Authentication is required; `session_expired` — Your session has ended; sign in again */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `csrf_token_invalid` — Missing or invalid CSRF token */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `rate_limited` — Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `internal_error` — Something went wrong */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    "auth.users.mfa.totp.enroll": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    password: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Pending factor */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["TotpEnrollment"];
+                };
+            };
+            /** @description `malformed_request` — The request could not be parsed */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `unauthenticated` — Authentication is required; `session_expired` — Your session has ended; sign in again */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `csrf_token_invalid` — Missing or invalid CSRF token; `reauthentication_failed` — Your current password is incorrect */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `mfa_already_enabled` — Two-factor authentication is already enabled */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `payload_too_large` — The request body is too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `validation_failed` — The request is invalid */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `rate_limited` — Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `internal_error` — Something went wrong */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    "auth.users.mfa.totp.confirm": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    code: components["schemas"]["__schema3"];
+                };
+            };
+        };
+        responses: {
+            /** @description Two-factor authentication is on */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": {
+                        recoveryCodes: components["schemas"]["__schema55"][];
+                    };
+                };
+            };
+            /** @description `malformed_request` — The request could not be parsed; `token_invalid` — The link or code is invalid or has expired */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `unauthenticated` — Authentication is required; `session_expired` — Your session has ended; sign in again; `mfa_code_invalid` — The verification code is incorrect */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `csrf_token_invalid` — Missing or invalid CSRF token */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `mfa_already_enabled` — Two-factor authentication is already enabled */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `payload_too_large` — The request body is too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `validation_failed` — The request is invalid */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `rate_limited` — Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `internal_error` — Something went wrong */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    "auth.users.mfa.totp.disable": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    password: string;
+                };
+            };
+        };
+        responses: {
+            /** @description Two-factor authentication is off */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description `malformed_request` — The request could not be parsed */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `unauthenticated` — Authentication is required; `session_expired` — Your session has ended; sign in again */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `csrf_token_invalid` — Missing or invalid CSRF token; `reauthentication_failed` — Your current password is incorrect; `forbidden` — You are not allowed to do this */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `mfa_not_enabled` — Two-factor authentication is not enabled */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `payload_too_large` — The request body is too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `validation_failed` — The request is invalid */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `rate_limited` — Too many requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `internal_error` — Something went wrong */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    "account.get": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description My profile */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CurrentUser"];
+                };
+            };
+            /** @description `unauthenticated` — Authentication is required; `session_expired` — Your session has ended; sign in again */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `internal_error` — Something went wrong */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    "account.update": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    firstName?: components["schemas"]["__schema5"];
+                    lastName?: components["schemas"]["__schema6"];
+                    phoneE164?: components["schemas"]["__schema7"];
+                    locale?: components["schemas"]["__schema8"];
+                    timezone?: components["schemas"]["__schema9"];
+                    avatarFileId?: components["schemas"]["__schema10"];
+                };
+            };
+        };
+        responses: {
+            /** @description Updated profile */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["CurrentUser"];
+                };
+            };
+            /** @description `malformed_request` — The request could not be parsed */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `unauthenticated` — Authentication is required; `session_expired` — Your session has ended; sign in again */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `csrf_token_invalid` — Missing or invalid CSRF token */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `not_found` — The resource was not found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `payload_too_large` — The request body is too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `validation_failed` — The request is invalid */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `internal_error` — Something went wrong */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    "account.avatar.upload": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": {
+                    /** @enum {string} */
+                    contentType: "image/png" | "image/jpeg" | "image/webp";
+                    sizeBytes: number;
+                };
+            };
+        };
+        responses: {
+            /** @description Pending upload */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PendingUpload"];
+                };
+            };
+            /** @description `malformed_request` — The request could not be parsed */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `unauthenticated` — Authentication is required; `session_expired` — Your session has ended; sign in again */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `csrf_token_invalid` — Missing or invalid CSRF token */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `payload_too_large` — The request body is too large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description `unsupported_media_type` — Unsupported content type */
+            415: {
                 headers: {
                     [name: string]: unknown;
                 };

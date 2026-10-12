@@ -29,3 +29,49 @@ export const moneySchema = z
       .regex(/^[A-Z]{3}$/),
   })
   .meta({ id: 'Money' });
+
+/** Email address, trimmed and lower-cased (unique per realm, case-insensitive). */
+export const emailSchema = z
+  .string()
+  .trim()
+  .max(254)
+  .pipe(z.email())
+  .transform((v) => v.toLowerCase())
+  .meta({ id: 'Email', example: 'owner@example.com' });
+
+/** IANA time zone name, e.g. `Europe/Berlin` (never an offset). */
+export const timezoneSchema = z
+  .string()
+  .max(64)
+  .refine((tz) => {
+    if (!/^[A-Za-z_]+(\/[A-Za-z0-9_+-]+)*$/.test(tz)) return false;
+    try {
+      new Intl.DateTimeFormat('en-US', { timeZone: tz });
+      return true;
+    } catch {
+      return false;
+    }
+  }, 'Expected an IANA time zone such as Europe/Berlin')
+  .meta({ id: 'TimeZone', example: 'Europe/Berlin' });
+
+/** BCP 47 language tag, canonicalized (`en`, `en-GB`, `ur-PK`). */
+export const localeSchema = z
+  .string()
+  .max(35)
+  .transform((tag, ctx) => {
+    try {
+      const [canonical] = Intl.getCanonicalLocales(tag);
+      if (canonical) return canonical;
+    } catch {
+      // fall through
+    }
+    ctx.addIssue({ code: 'custom', message: 'Expected a BCP 47 language tag such as en-GB' });
+    return z.NEVER;
+  })
+  .meta({ id: 'Locale', example: 'en-GB' });
+
+/** Phone number in E.164 (`+923001234567`). */
+export const phoneE164Schema = z
+  .string()
+  .regex(/^\+[1-9]\d{6,14}$/, 'Expected an E.164 phone number such as +923001234567')
+  .meta({ id: 'PhoneE164', example: '+923001234567' });

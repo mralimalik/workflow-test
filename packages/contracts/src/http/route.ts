@@ -16,6 +16,31 @@ export type Audience = (typeof AUDIENCES)[number];
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
+/** Identity realms (features/auth-and-identity.md): separate tables, cookies and sessions. */
+export const REALMS = ['user', 'customer', 'platform_admin'] as const;
+export type Realm = (typeof REALMS)[number];
+
+/**
+ * Who may call a route: `none` (anonymous allowed) or a realm whose session is required.
+ * Defaults by audience: business → `user`, customer → `customer`, admin → `platform_admin`,
+ * everything else → `none`. Routes in the `auth` audience must declare it.
+ */
+export type AuthRequirement = 'none' | Realm;
+
+export function routeAuth(route: Pick<RouteDefinition, 'auth' | 'audience'>): AuthRequirement {
+  if (route.auth) return route.auth;
+  switch (route.audience) {
+    case 'business':
+      return 'user';
+    case 'customer':
+      return 'customer';
+    case 'admin':
+      return 'platform_admin';
+    default:
+      return 'none';
+  }
+}
+
 /** Named rate-limit policies a route can opt into (BACKEND.md §9.3); `default` always applies. */
 export const RATE_LIMIT_POLICY_NAMES = ['auth.login', 'auth.link', 'public.write'] as const;
 export type RateLimitPolicyName = (typeof RATE_LIMIT_POLICY_NAMES)[number];
@@ -59,6 +84,8 @@ export interface RouteDefinition {
   readonly idempotent?: boolean;
   /** Requires `If-Match` and returns `ETag` (BACKEND.md §5.7). */
   readonly versioned?: boolean;
+  /** Required authentication; see {@link routeAuth} for the audience defaults. */
+  readonly auth?: AuthRequirement;
   /** Extra rate-limit policy for this route, on top of `default`. */
   readonly rateLimit?: RateLimitPolicyName;
   /** Excluded from published documentation (still type-checked and conformance-tested). */

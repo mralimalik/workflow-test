@@ -26,11 +26,23 @@ function hash(value: string): string {
   return createHash('sha256').update(value).digest('base64url').slice(0, 22);
 }
 
-/** Identifier fields that login-like requests send (normalized, hashed; never stored raw). */
+/**
+ * What an auth request is about, hashed (never stored raw): the account identifier or
+ * one-time token in the body, else the signed-in subject (the auth guard runs first), so
+ * people behind one NAT do not share a bucket for authenticated actions.
+ */
 function identifierOf(req: Request): string {
   const body = (req.body ?? {}) as Record<string, unknown>;
-  const raw = [body['email'], body['phone'], body['identifier']].find((v) => typeof v === 'string');
-  return typeof raw === 'string' ? hash(raw.trim().toLowerCase()) : 'none';
+  const raw = [
+    body['email'],
+    body['phone'],
+    body['identifier'],
+    body['token'],
+    body['mfaToken'],
+  ].find((v) => typeof v === 'string');
+  if (typeof raw === 'string') return hash(raw.trim().toLowerCase());
+  const actor = RequestContext.get()?.actor;
+  return actor ? hash(`${actor.type}:${actor.id}`) : 'none';
 }
 
 function subjectOf(req: Request): string {
@@ -50,7 +62,7 @@ export const RATE_LIMIT_POLICIES: Readonly<
     windowMs: 15 * MINUTE,
     tracker: (req) => `${req.ip ?? 'unknown'}:${identifierOf(req)}`,
   },
-  /** Password reset / verification link requests: per IP and per identifier. */
+  /** Link requests and link/token redemption: per IP and per identifier or token. */
   'auth.link': {
     name: 'auth.link',
     limit: 5,

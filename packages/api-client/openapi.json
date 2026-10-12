@@ -276,29 +276,1760 @@
           }
         }
       }
+    },
+    "/v1/auth/users/signup": {
+      "post": {
+        "operationId": "auth.users.signup",
+        "summary": "Create a user account and sign in",
+        "description": "Creates the user with an unverified email, sends the verification link and starts a session (FR-AUTH-001).",
+        "tags": ["Auth · users"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "$ref": "#/components/schemas/Email"
+                  },
+                  "password": {
+                    "$ref": "#/components/schemas/Password"
+                  },
+                  "firstName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "lastName": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                  },
+                  "locale": {
+                    "$ref": "#/components/schemas/Locale"
+                  },
+                  "timezone": {
+                    "$ref": "#/components/schemas/TimeZone"
+                  }
+                },
+                "required": ["email", "password", "firstName"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Signed up and signed in",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserSession"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "`malformed_request` — The request could not be parsed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`email_taken` — An account with this email already exists",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "`payload_too_large` — The request body is too large",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "`validation_failed` — The request is invalid",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "`rate_limited` — Too many requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "`internal_error` — Something went wrong",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/users/login": {
+      "post": {
+        "operationId": "auth.users.login",
+        "summary": "Sign in with email and password",
+        "description": "Returns a session, or `mfa_required` with a single-use token when two-factor authentication is on.",
+        "tags": ["Auth · users"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "$ref": "#/components/schemas/Email"
+                  },
+                  "password": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                  }
+                },
+                "required": ["email", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Signed in, or second factor needed",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "`malformed_request` — The request could not be parsed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`invalid_credentials` — The email or password is incorrect",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`account_disabled` — This account is disabled",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "`payload_too_large` — The request body is too large",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "`validation_failed` — The request is invalid",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "`rate_limited` — Too many requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "`internal_error` — Something went wrong",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/users/mfa/verify": {
+      "post": {
+        "operationId": "auth.users.mfa.verify",
+        "summary": "Complete sign-in with a TOTP or recovery code",
+        "tags": ["Auth · users"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "mfaToken": {
+                        "type": "string",
+                        "minLength": 20,
+                        "maxLength": 200
+                      },
+                      "code": {
+                        "$ref": "#/components/schemas/__schema3"
+                      }
+                    },
+                    "required": ["mfaToken", "code"]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "mfaToken": {
+                        "type": "string",
+                        "minLength": 20,
+                        "maxLength": 200
+                      },
+                      "recoveryCode": {
+                        "type": "string",
+                        "minLength": 8,
+                        "maxLength": 32
+                      }
+                    },
+                    "required": ["mfaToken", "recoveryCode"]
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Signed in",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserSession"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "`malformed_request` — The request could not be parsed; `token_invalid` — The link or code is invalid or has expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`mfa_code_invalid` — The verification code is incorrect",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`account_disabled` — This account is disabled",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "`payload_too_large` — The request body is too large",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "`validation_failed` — The request is invalid",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "`rate_limited` — Too many requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "`internal_error` — Something went wrong",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/users/session": {
+      "get": {
+        "operationId": "auth.users.session",
+        "summary": "Current user, session and CSRF token",
+        "tags": ["Auth · users"],
+        "responses": {
+          "200": {
+            "description": "The current session",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserSession"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`unauthenticated` — Authentication is required; `session_expired` — Your session has ended; sign in again",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "`internal_error` — Something went wrong",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/users/logout": {
+      "post": {
+        "operationId": "auth.users.logout",
+        "summary": "Sign out (revoke the current session)",
+        "tags": ["Auth · users"],
+        "responses": {
+          "204": {
+            "description": "Signed out"
+          },
+          "401": {
+            "description": "`unauthenticated` — Authentication is required; `session_expired` — Your session has ended; sign in again",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`csrf_token_invalid` — Missing or invalid CSRF token",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "`internal_error` — Something went wrong",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/users/sessions": {
+      "get": {
+        "operationId": "auth.users.sessions.list",
+        "summary": "List active sessions (devices)",
+        "tags": ["Auth · users"],
+        "responses": {
+          "200": {
+            "description": "Active sessions, most recent first",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "data": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/SessionListItem"
+                      }
+                    }
+                  },
+                  "required": ["data"],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`unauthenticated` — Authentication is required; `session_expired` — Your session has ended; sign in again",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "`internal_error` — Something went wrong",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/users/sessions/{sessionId}": {
+      "delete": {
+        "operationId": "auth.users.sessions.revoke",
+        "summary": "Sign out one session",
+        "tags": ["Auth · users"],
+        "parameters": [
+          {
+            "in": "path",
+            "name": "sessionId",
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Revoked"
+          },
+          "401": {
+            "description": "`unauthenticated` — Authentication is required; `session_expired` — Your session has ended; sign in again",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`csrf_token_invalid` — Missing or invalid CSRF token",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "`not_found` — The resource was not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "`validation_failed` — The request is invalid",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "`internal_error` — Something went wrong",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/users/sessions/revoke-others": {
+      "post": {
+        "operationId": "auth.users.sessions.revoke_others",
+        "summary": "Sign out every other session",
+        "tags": ["Auth · users"],
+        "responses": {
+          "200": {
+            "description": "Revoked",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "revoked": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 9007199254740991
+                    }
+                  },
+                  "required": ["revoked"],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`unauthenticated` — Authentication is required; `session_expired` — Your session has ended; sign in again",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`csrf_token_invalid` — Missing or invalid CSRF token",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "`internal_error` — Something went wrong",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/users/password/forgot": {
+      "post": {
+        "operationId": "auth.users.password.forgot",
+        "summary": "Email a password reset link",
+        "description": "Always accepted, whether or not the account exists (no account enumeration).",
+        "tags": ["Auth · users"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "$ref": "#/components/schemas/Email"
+                  }
+                },
+                "required": ["email"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "202": {
+            "description": "If the account exists, a link was sent"
+          },
+          "400": {
+            "description": "`malformed_request` — The request could not be parsed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "`payload_too_large` — The request body is too large",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "`validation_failed` — The request is invalid",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "`rate_limited` — Too many requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "`internal_error` — Something went wrong",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/users/password/reset": {
+      "post": {
+        "operationId": "auth.users.password.reset",
+        "summary": "Set a new password with a reset link token",
+        "description": "Single use. Signs out every session of the account.",
+        "tags": ["Auth · users"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "$ref": "#/components/schemas/__schema4"
+                  },
+                  "password": {
+                    "$ref": "#/components/schemas/Password"
+                  }
+                },
+                "required": ["token", "password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Password changed"
+          },
+          "400": {
+            "description": "`malformed_request` — The request could not be parsed; `token_invalid` — The link or code is invalid or has expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "`payload_too_large` — The request body is too large",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "`validation_failed` — The request is invalid",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "`rate_limited` — Too many requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "`internal_error` — Something went wrong",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/users/password/change": {
+      "post": {
+        "operationId": "auth.users.password.change",
+        "summary": "Change password (requires the current one)",
+        "description": "Signs out every other session.",
+        "tags": ["Auth · users"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "currentPassword": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                  },
+                  "newPassword": {
+                    "$ref": "#/components/schemas/Password"
+                  }
+                },
+                "required": ["currentPassword", "newPassword"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Password changed"
+          },
+          "400": {
+            "description": "`malformed_request` — The request could not be parsed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`unauthenticated` — Authentication is required; `session_expired` — Your session has ended; sign in again",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`csrf_token_invalid` — Missing or invalid CSRF token; `reauthentication_failed` — Your current password is incorrect",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "`payload_too_large` — The request body is too large",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "`validation_failed` — The request is invalid",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "`rate_limited` — Too many requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "`internal_error` — Something went wrong",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/users/email/verify": {
+      "post": {
+        "operationId": "auth.users.email.verify",
+        "summary": "Confirm the email address with the link token",
+        "tags": ["Auth · users"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "$ref": "#/components/schemas/__schema4"
+                  }
+                },
+                "required": ["token"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Email verified"
+          },
+          "400": {
+            "description": "`malformed_request` — The request could not be parsed; `token_invalid` — The link or code is invalid or has expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "`payload_too_large` — The request body is too large",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "`validation_failed` — The request is invalid",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "`rate_limited` — Too many requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "`internal_error` — Something went wrong",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/users/email/resend": {
+      "post": {
+        "operationId": "auth.users.email.resend",
+        "summary": "Send the verification link again",
+        "tags": ["Auth · users"],
+        "responses": {
+          "202": {
+            "description": "Sent (no-op when already verified)"
+          },
+          "401": {
+            "description": "`unauthenticated` — Authentication is required; `session_expired` — Your session has ended; sign in again",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`csrf_token_invalid` — Missing or invalid CSRF token",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "`rate_limited` — Too many requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "`internal_error` — Something went wrong",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/users/mfa/totp/enroll": {
+      "post": {
+        "operationId": "auth.users.mfa.totp.enroll",
+        "summary": "Start TOTP setup (requires the password)",
+        "description": "Returns a new secret to add to an authenticator app; confirm it with a code.",
+        "tags": ["Auth · users"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "password": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                  }
+                },
+                "required": ["password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Pending factor",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TotpEnrollment"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "`malformed_request` — The request could not be parsed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`unauthenticated` — Authentication is required; `session_expired` — Your session has ended; sign in again",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`csrf_token_invalid` — Missing or invalid CSRF token; `reauthentication_failed` — Your current password is incorrect",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`mfa_already_enabled` — Two-factor authentication is already enabled",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "`payload_too_large` — The request body is too large",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "`validation_failed` — The request is invalid",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "`rate_limited` — Too many requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "`internal_error` — Something went wrong",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/users/mfa/totp/confirm": {
+      "post": {
+        "operationId": "auth.users.mfa.totp.confirm",
+        "summary": "Activate TOTP with a code from the app",
+        "description": "Returns 10 single-use recovery codes. They are shown only once.",
+        "tags": ["Auth · users"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "code": {
+                    "$ref": "#/components/schemas/__schema3"
+                  }
+                },
+                "required": ["code"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Two-factor authentication is on",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "recoveryCodes": {
+                      "minItems": 10,
+                      "maxItems": 10,
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/__schema55"
+                      }
+                    }
+                  },
+                  "required": ["recoveryCodes"],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "`malformed_request` — The request could not be parsed; `token_invalid` — The link or code is invalid or has expired",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`unauthenticated` — Authentication is required; `session_expired` — Your session has ended; sign in again; `mfa_code_invalid` — The verification code is incorrect",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`csrf_token_invalid` — Missing or invalid CSRF token",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`mfa_already_enabled` — Two-factor authentication is already enabled",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "`payload_too_large` — The request body is too large",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "`validation_failed` — The request is invalid",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "`rate_limited` — Too many requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "`internal_error` — Something went wrong",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/users/mfa/totp/disable": {
+      "post": {
+        "operationId": "auth.users.mfa.totp.disable",
+        "summary": "Turn off TOTP (requires the password)",
+        "tags": ["Auth · users"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "password": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 256
+                  }
+                },
+                "required": ["password"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Two-factor authentication is off"
+          },
+          "400": {
+            "description": "`malformed_request` — The request could not be parsed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`unauthenticated` — Authentication is required; `session_expired` — Your session has ended; sign in again",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`csrf_token_invalid` — Missing or invalid CSRF token; `reauthentication_failed` — Your current password is incorrect; `forbidden` — You are not allowed to do this",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "`mfa_not_enabled` — Two-factor authentication is not enabled",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "`payload_too_large` — The request body is too large",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "`validation_failed` — The request is invalid",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "`rate_limited` — Too many requests",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "`internal_error` — Something went wrong",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/users/account": {
+      "get": {
+        "operationId": "account.get",
+        "summary": "Get my profile",
+        "tags": ["Account"],
+        "responses": {
+          "200": {
+            "description": "My profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentUser"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`unauthenticated` — Authentication is required; `session_expired` — Your session has ended; sign in again",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "`internal_error` — Something went wrong",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "account.update",
+        "summary": "Update my profile",
+        "description": "Fields left out stay unchanged; `null` clears an optional field. To change the avatar, upload it first (`account.avatar.upload`) and pass the file id.",
+        "tags": ["Account"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "firstName": {
+                    "$ref": "#/components/schemas/__schema5"
+                  },
+                  "lastName": {
+                    "$ref": "#/components/schemas/__schema6"
+                  },
+                  "phoneE164": {
+                    "$ref": "#/components/schemas/__schema7"
+                  },
+                  "locale": {
+                    "$ref": "#/components/schemas/__schema8"
+                  },
+                  "timezone": {
+                    "$ref": "#/components/schemas/__schema9"
+                  },
+                  "avatarFileId": {
+                    "$ref": "#/components/schemas/__schema10"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updated profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentUser"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "`malformed_request` — The request could not be parsed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`unauthenticated` — Authentication is required; `session_expired` — Your session has ended; sign in again",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`csrf_token_invalid` — Missing or invalid CSRF token",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "`not_found` — The resource was not found",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "`payload_too_large` — The request body is too large",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "`validation_failed` — The request is invalid",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "`internal_error` — Something went wrong",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/users/account/avatar": {
+      "post": {
+        "operationId": "account.avatar.upload",
+        "summary": "Get a signed URL to upload a new avatar",
+        "description": "PUT the image bytes to `upload.url`, then PATCH the account with `avatarFileId`.",
+        "tags": ["Account"],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "contentType": {
+                    "type": "string",
+                    "enum": ["image/png", "image/jpeg", "image/webp"]
+                  },
+                  "sizeBytes": {
+                    "type": "integer",
+                    "exclusiveMinimum": 0,
+                    "maximum": 9007199254740991
+                  }
+                },
+                "required": ["contentType", "sizeBytes"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Pending upload",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PendingUpload"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "`malformed_request` — The request could not be parsed",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "`unauthenticated` — Authentication is required; `session_expired` — Your session has ended; sign in again",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "`csrf_token_invalid` — Missing or invalid CSRF token",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "413": {
+            "description": "`payload_too_large` — The request body is too large",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "415": {
+            "description": "`unsupported_media_type` — Unsupported content type",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "`validation_failed` — The request is invalid",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "`internal_error` — Something went wrong",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "Email": {
+        "example": "owner@example.com",
+        "$ref": "#/components/schemas/__schema1"
+      },
+      "Password": {
+        "type": "string",
+        "minLength": 10,
+        "maxLength": 256,
+        "format": "password"
+      },
+      "Locale": {
+        "example": "en-GB",
+        "$ref": "#/components/schemas/__schema2"
+      },
+      "TimeZone": {
+        "type": "string",
+        "maxLength": 64,
+        "example": "Europe/Berlin"
+      },
+      "PhoneE164": {
+        "type": "string",
+        "pattern": "^\\+[1-9]\\d{6,14}$",
+        "example": "+923001234567"
+      },
       "__schema0": {
         "type": "string",
         "minLength": 20,
         "maxLength": 600
       },
+      "__schema1": {
+        "type": "string",
+        "maxLength": 254
+      },
+      "__schema2": {
+        "type": "string",
+        "maxLength": 35
+      },
+      "__schema3": {
+        "type": "string",
+        "pattern": "^\\d{6}$"
+      },
+      "__schema4": {
+        "type": "string",
+        "minLength": 20,
+        "maxLength": 200
+      },
+      "__schema5": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 100
+      },
+      "__schema6": {
+        "anyOf": [
+          {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 100
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "__schema7": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/PhoneE164"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "__schema8": {
+        "$ref": "#/components/schemas/Locale"
+      },
+      "__schema9": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/TimeZone"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "__schema10": {
+        "anyOf": [
+          {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
       "HealthResult": {
         "type": "object",
         "properties": {
           "status": {
-            "$ref": "#/components/schemas/__schema1"
+            "$ref": "#/components/schemas/__schema11"
           },
           "info": {
-            "$ref": "#/components/schemas/__schema2"
+            "$ref": "#/components/schemas/__schema12"
           },
           "error": {
-            "$ref": "#/components/schemas/__schema4"
+            "$ref": "#/components/schemas/__schema14"
           },
           "details": {
-            "$ref": "#/components/schemas/__schema5"
+            "$ref": "#/components/schemas/__schema15"
           }
         },
         "required": ["status", "details"],
@@ -308,25 +2039,25 @@
         "type": "object",
         "properties": {
           "type": {
-            "$ref": "#/components/schemas/__schema6"
+            "$ref": "#/components/schemas/__schema16"
           },
           "title": {
-            "$ref": "#/components/schemas/__schema7"
+            "$ref": "#/components/schemas/__schema17"
           },
           "status": {
-            "$ref": "#/components/schemas/__schema8"
+            "$ref": "#/components/schemas/__schema18"
           },
           "code": {
-            "$ref": "#/components/schemas/__schema9"
+            "$ref": "#/components/schemas/__schema19"
           },
           "detail": {
-            "$ref": "#/components/schemas/__schema10"
+            "$ref": "#/components/schemas/__schema20"
           },
           "requestId": {
-            "$ref": "#/components/schemas/__schema11"
+            "$ref": "#/components/schemas/__schema21"
           },
           "errors": {
-            "$ref": "#/components/schemas/__schema12"
+            "$ref": "#/components/schemas/__schema22"
           }
         },
         "required": ["type", "title", "status", "code", "detail", "requestId"],
@@ -337,13 +2068,13 @@
         "type": "object",
         "properties": {
           "path": {
-            "$ref": "#/components/schemas/__schema13"
+            "$ref": "#/components/schemas/__schema23"
           },
           "code": {
-            "$ref": "#/components/schemas/__schema14"
+            "$ref": "#/components/schemas/__schema24"
           },
           "message": {
-            "$ref": "#/components/schemas/__schema15"
+            "$ref": "#/components/schemas/__schema25"
           }
         },
         "required": ["path", "code", "message"],
@@ -353,35 +2084,219 @@
         "type": "object",
         "properties": {
           "id": {
-            "$ref": "#/components/schemas/__schema16"
+            "$ref": "#/components/schemas/__schema26"
           },
           "status": {
-            "$ref": "#/components/schemas/__schema17"
+            "$ref": "#/components/schemas/__schema27"
           },
           "contentType": {
-            "$ref": "#/components/schemas/__schema18"
+            "$ref": "#/components/schemas/__schema28"
           },
           "sizeBytes": {
-            "$ref": "#/components/schemas/__schema19"
+            "$ref": "#/components/schemas/__schema29"
           }
         },
         "required": ["id", "status", "contentType", "sizeBytes"],
         "additionalProperties": false
       },
-      "__schema1": {
+      "UserSession": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/CurrentUser"
+          },
+          "session": {
+            "$ref": "#/components/schemas/SessionInfo"
+          },
+          "csrfToken": {
+            "$ref": "#/components/schemas/__schema44"
+          },
+          "mfaEnrollmentRequired": {
+            "$ref": "#/components/schemas/__schema45"
+          }
+        },
+        "required": ["user", "session", "csrfToken", "mfaEnrollmentRequired"],
+        "additionalProperties": false
+      },
+      "CurrentUser": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/__schema30"
+          },
+          "email": {
+            "$ref": "#/components/schemas/__schema31"
+          },
+          "emailVerified": {
+            "$ref": "#/components/schemas/__schema32"
+          },
+          "firstName": {
+            "$ref": "#/components/schemas/__schema33"
+          },
+          "lastName": {
+            "$ref": "#/components/schemas/__schema34"
+          },
+          "phoneE164": {
+            "$ref": "#/components/schemas/__schema35"
+          },
+          "locale": {
+            "$ref": "#/components/schemas/__schema36"
+          },
+          "timezone": {
+            "$ref": "#/components/schemas/__schema37"
+          },
+          "avatar": {
+            "$ref": "#/components/schemas/__schema38"
+          },
+          "mfaEnabled": {
+            "$ref": "#/components/schemas/__schema40"
+          },
+          "createdAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "emailVerified",
+          "firstName",
+          "lastName",
+          "phoneE164",
+          "locale",
+          "timezone",
+          "avatar",
+          "mfaEnabled",
+          "createdAt"
+        ],
+        "additionalProperties": false
+      },
+      "Timestamp": {
+        "type": "string",
+        "format": "date-time",
+        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z))$",
+        "example": "2026-10-11T14:30:00Z"
+      },
+      "SessionInfo": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/__schema41"
+          },
+          "authMethod": {
+            "$ref": "#/components/schemas/__schema42"
+          },
+          "mfaVerified": {
+            "$ref": "#/components/schemas/__schema43"
+          },
+          "createdAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "idleExpiresAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "absoluteExpiresAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          }
+        },
+        "required": [
+          "id",
+          "authMethod",
+          "mfaVerified",
+          "createdAt",
+          "idleExpiresAt",
+          "absoluteExpiresAt"
+        ],
+        "additionalProperties": false
+      },
+      "LoginResult": {
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/__schema46"
+          },
+          {
+            "$ref": "#/components/schemas/__schema47"
+          }
+        ],
+        "type": "object",
+        "discriminator": {
+          "propertyName": "status",
+          "mapping": {
+            "authenticated": "#/components/schemas/__schema46",
+            "mfa_required": "#/components/schemas/__schema47"
+          }
+        }
+      },
+      "SessionListItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "$ref": "#/components/schemas/__schema48"
+          },
+          "current": {
+            "$ref": "#/components/schemas/__schema49"
+          },
+          "authMethod": {
+            "$ref": "#/components/schemas/__schema50"
+          },
+          "deviceLabel": {
+            "$ref": "#/components/schemas/__schema51"
+          },
+          "ip": {
+            "$ref": "#/components/schemas/__schema52"
+          },
+          "createdAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          },
+          "lastSeenAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          }
+        },
+        "required": ["id", "current", "authMethod", "deviceLabel", "ip", "createdAt", "lastSeenAt"],
+        "additionalProperties": false
+      },
+      "TotpEnrollment": {
+        "type": "object",
+        "properties": {
+          "secret": {
+            "$ref": "#/components/schemas/__schema53"
+          },
+          "otpauthUrl": {
+            "$ref": "#/components/schemas/__schema54"
+          },
+          "expiresAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          }
+        },
+        "required": ["secret", "otpauthUrl", "expiresAt"],
+        "additionalProperties": false
+      },
+      "PendingUpload": {
+        "type": "object",
+        "properties": {
+          "fileId": {
+            "$ref": "#/components/schemas/__schema56"
+          },
+          "upload": {
+            "$ref": "#/components/schemas/__schema57"
+          }
+        },
+        "required": ["fileId", "upload"],
+        "additionalProperties": false
+      },
+      "__schema11": {
         "type": "string",
         "enum": ["ok", "error", "shutting_down", "degraded"]
       },
-      "__schema2": {
+      "__schema12": {
         "type": "object",
         "propertyNames": {
           "type": "string"
         },
         "additionalProperties": {
-          "$ref": "#/components/schemas/__schema3"
+          "$ref": "#/components/schemas/__schema13"
         }
       },
-      "__schema3": {
+      "__schema13": {
         "type": "object",
         "properties": {
           "status": {
@@ -392,80 +2307,275 @@
         "required": ["status"],
         "additionalProperties": {}
       },
-      "__schema4": {
+      "__schema14": {
         "type": "object",
         "propertyNames": {
           "type": "string"
         },
         "additionalProperties": {
-          "$ref": "#/components/schemas/__schema3"
+          "$ref": "#/components/schemas/__schema13"
         }
       },
-      "__schema5": {
+      "__schema15": {
         "type": "object",
         "propertyNames": {
           "type": "string"
         },
         "additionalProperties": {
-          "$ref": "#/components/schemas/__schema3"
+          "$ref": "#/components/schemas/__schema13"
         }
       },
-      "__schema6": {
+      "__schema16": {
         "type": "string",
         "format": "uri"
       },
-      "__schema7": {
+      "__schema17": {
         "type": "string"
       },
-      "__schema8": {
+      "__schema18": {
         "type": "integer",
         "minimum": -9007199254740991,
         "maximum": 9007199254740991
       },
-      "__schema9": {
+      "__schema19": {
         "type": "string",
         "description": "Stable machine-readable error code"
       },
-      "__schema10": {
+      "__schema20": {
         "type": ["string", "null"]
       },
-      "__schema11": {
+      "__schema21": {
         "type": ["string", "null"]
       },
-      "__schema12": {
+      "__schema22": {
         "type": "array",
         "items": {
           "$ref": "#/components/schemas/FieldError"
         }
       },
-      "__schema13": {
+      "__schema23": {
         "type": "string",
         "description": "Dot path to the field, e.g. `address.city`",
         "example": "email"
       },
-      "__schema14": {
+      "__schema24": {
         "type": "string",
         "example": "invalid_format"
       },
-      "__schema15": {
+      "__schema25": {
         "type": "string"
       },
-      "__schema16": {
+      "__schema26": {
         "type": "string",
         "format": "uuid",
         "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
       },
-      "__schema17": {
+      "__schema27": {
         "type": "string",
         "enum": ["ready"]
       },
-      "__schema18": {
+      "__schema28": {
         "type": "string"
       },
-      "__schema19": {
+      "__schema29": {
         "type": "integer",
         "minimum": -9007199254740991,
         "maximum": 9007199254740991
+      },
+      "__schema30": {
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+      },
+      "__schema31": {
+        "type": "string",
+        "format": "email",
+        "pattern": "^(?:[A-Za-z0-9_'+\\-]+\\.)*[A-Za-z0-9_'+\\-]*[A-Za-z0-9_+-]@(?:[A-Za-z0-9][A-Za-z0-9\\-]*\\.)+[A-Za-z]{2,}$"
+      },
+      "__schema32": {
+        "type": "boolean"
+      },
+      "__schema33": {
+        "type": "string"
+      },
+      "__schema34": {
+        "type": ["string", "null"]
+      },
+      "__schema35": {
+        "type": ["string", "null"]
+      },
+      "__schema36": {
+        "type": "string"
+      },
+      "__schema37": {
+        "type": ["string", "null"]
+      },
+      "__schema38": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/__schema39"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "description": "Short-lived download URL; refetch the account when it expires"
+      },
+      "__schema39": {
+        "type": "object",
+        "properties": {
+          "fileId": {
+            "type": "string",
+            "format": "uuid",
+            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+          },
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "expiresAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          }
+        },
+        "required": ["fileId", "url", "expiresAt"],
+        "additionalProperties": false
+      },
+      "__schema40": {
+        "type": "boolean"
+      },
+      "__schema41": {
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+      },
+      "__schema42": {
+        "type": "string",
+        "enum": [
+          "password",
+          "otp_sms",
+          "otp_email",
+          "otp_whatsapp",
+          "magic_link",
+          "oauth_google",
+          "refresh"
+        ]
+      },
+      "__schema43": {
+        "type": "boolean"
+      },
+      "__schema44": {
+        "type": "string",
+        "description": "Send as `X-CSRF-Token` on every state-changing request of this session"
+      },
+      "__schema45": {
+        "type": "boolean",
+        "description": "An organization requires 2FA: business endpoints refuse until TOTP is set up"
+      },
+      "__schema46": {
+        "type": "object",
+        "properties": {
+          "user": {
+            "$ref": "#/components/schemas/CurrentUser"
+          },
+          "session": {
+            "$ref": "#/components/schemas/SessionInfo"
+          },
+          "csrfToken": {
+            "$ref": "#/components/schemas/__schema44"
+          },
+          "mfaEnrollmentRequired": {
+            "$ref": "#/components/schemas/__schema45"
+          },
+          "status": {
+            "type": "string",
+            "const": "authenticated"
+          }
+        },
+        "required": ["user", "session", "csrfToken", "mfaEnrollmentRequired", "status"],
+        "additionalProperties": false
+      },
+      "__schema47": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "const": "mfa_required"
+          },
+          "mfaToken": {
+            "type": "string",
+            "description": "Single-use; pass to `mfa/verify` within 5 minutes"
+          },
+          "methods": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["totp", "recovery_code"]
+            }
+          },
+          "expiresAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          }
+        },
+        "required": ["status", "mfaToken", "methods", "expiresAt"],
+        "additionalProperties": false
+      },
+      "__schema48": {
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+      },
+      "__schema49": {
+        "type": "boolean"
+      },
+      "__schema50": {
+        "type": "string",
+        "enum": [
+          "password",
+          "otp_sms",
+          "otp_email",
+          "otp_whatsapp",
+          "magic_link",
+          "oauth_google",
+          "refresh"
+        ]
+      },
+      "__schema51": {
+        "type": ["string", "null"]
+      },
+      "__schema52": {
+        "type": ["string", "null"]
+      },
+      "__schema53": {
+        "type": "string"
+      },
+      "__schema54": {
+        "type": "string"
+      },
+      "__schema55": {
+        "type": "string"
+      },
+      "__schema56": {
+        "type": "string",
+        "format": "uuid",
+        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+      },
+      "__schema57": {
+        "type": "object",
+        "properties": {
+          "url": {
+            "type": "string",
+            "format": "uri"
+          },
+          "method": {
+            "type": "string",
+            "const": "PUT"
+          },
+          "expiresAt": {
+            "$ref": "#/components/schemas/Timestamp"
+          }
+        },
+        "required": ["url", "method", "expiresAt"],
+        "additionalProperties": false
       }
     }
   }

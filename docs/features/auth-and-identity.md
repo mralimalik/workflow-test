@@ -27,8 +27,10 @@ passwordless way into one global account.
 ## Business rules
 
 1. Emails are unique per realm (case-insensitive). Phones are unique among active customers.
-2. Passwords: min 10 chars, checked against a breached-password list (k-anonymity API or
-   local list), hashed with Argon2id.
+2. Passwords: 10–256 characters (code points), must not contain the email's local part,
+   checked against a breached-password list (Have I Been Pwned range API with k-anonymity
+   plus a local list; `PASSWORD_BREACH_CHECK`), hashed with Argon2id (19 MiB, t=2, p=1;
+   rehashed on login when the parameters were weaker). No composition rules (NIST SP 800-63B).
 3. OTP: 6 digits, valid 10 minutes, max 5 attempts per challenge, max 5 sends per
    destination per hour and 1 per 30 s; responses never reveal whether an account exists.
 4. A customer is created on first successful OTP for a new phone/email. If a customer
@@ -40,14 +42,28 @@ passwordless way into one global account.
    Platform admins must use TOTP.
 7. Session lifetimes: users idle 12 h / absolute 30 d; customers idle 30 d / absolute
    90 d; admins idle 30 min / absolute 12 h. Sensitive actions (password change, payout
-   settings, provider credentials) require re-authentication within 10 minutes.
-8. Password change or reset revokes all other sessions of that subject.
+   settings, provider credentials) require re-authentication within 10 minutes; for
+   password change and TOTP enrol/disable the current password is sent with the request.
+8. Password change revokes all other sessions of that subject; reset (forgot password)
+   revokes all of them. A successful reset also marks the email verified.
 9. Banning (by platform admin) sets status `banned`, bumps `session_version`, revokes all
    sessions/refresh families immediately ([FR-AUTH-006](../product/requirements.md#fr-auth--authentication-and-identity)).
 10. Customer contact change (new phone/email) requires OTP to the new destination; the
     old destination gets a notice.
 11. Merging customer identities happens only when the same person proves control of both
     contact points ([FR-CUS-010](../product/requirements.md#fr-cus--customers)).
+12. Links: email verification 24 h, password reset 30 min; single use. Several links may be
+    open at once; using one closes the subject's other open links for the same purpose.
+13. Lockout: 10 failed password or code checks for one account within 15 minutes refuse
+    further logins for that account (from any IP) until the window passes; independently,
+    the `auth.login` rate limit allows 10 attempts per IP and account per 15 minutes.
+    Second-factor login tokens allow 5 code attempts and live 5 minutes.
+14. New-device sign-in alert: emailed when a login comes from a device label (browser + OS)
+    the account has not used before. Controlled by the `auth.login_alert_email` feature
+    flag (on by default; a `user` override of `false` opts one user out).
+15. Organizations that require 2FA (`users.mfa_required`): the session still starts, but
+    business endpoints answer `403 mfa_enrollment_required` until TOTP is set up, and TOTP
+    cannot be disabled.
 
 ## Flows
 
@@ -80,6 +96,17 @@ challenges; the resulting verification is attached to the conversation
 Signup creates the user (unverified email), sends verification link, creates a session
 with limited scope (can create an organization, cannot invite until verified).
 
+### 5.5 User login with a second factor
+
+```
+POST /auth/users/login       { email, password }
+  → lockout + rate limit → Argon2id verify
+  → no TOTP: session (cookie att_u) → 200 { status: "authenticated", user, session, csrfToken }
+  → TOTP on: 200 { status: "mfa_required", mfaToken, methods, expiresAt }   (no cookie)
+POST /auth/users/mfa/verify  { mfaToken, code } | { mfaToken, recoveryCode }
+  → TOTP step accepted once / recovery code burned → session → 200 { user, session, csrfToken }
+```
+
 ## Data
 
 [`users`](../data-model/01-identity-and-auth.md#users),
@@ -97,31 +124,46 @@ with limited scope (can create an organization, cannot invite until verified).
 
 | Method | Path | Realms | Purpose |
 |---|---|---|---|
-| POST | `/auth/users/signup` | user | Create account |
+| POST | `/auth/users/signup` | user | Create account and sign in |
 | POST | `/auth/{realm}/login` | user, admin, customer (if password set) | Password login → may return `mfa_required` |
 | POST | `/auth/{realm}/mfa/verify` | user, admin | Complete login with TOTP/recovery code |
 | POST | `/auth/customers/otp/start` | customer | Send OTP (login) |
 | POST | `/auth/customers/otp/verify` | customer | Verify OTP → session |
-| GET | `/auth/{realm}/session` | all | Current subject + CSRF token |
+| GET | `/auth/{realm}/session` | all | Current subject, session + CSRF token |
 | POST | `/auth/{realm}/logout` | all | Revoke current session |
 | GET | `/auth/{realm}/sessions` | all | List active sessions |
 | DELETE | `/auth/{realm}/sessions/{sessionId}` | all | Revoke one session |
 | POST | `/auth/{realm}/sessions/revoke-others` | all | Log out other devices |
-| POST | `/auth/{realm}/password/forgot` | user, admin, customer | Send reset link |
+| POST | `/auth/{realm}/password/forgot` | user, admin, customer | Send reset link (always `202`) |
 | POST | `/auth/{realm}/password/reset` | user, admin, customer | Reset with token |
-| POST | `/auth/{realm}/password/change` | all | Change (re-auth) |
+| POST | `/auth/{realm}/password/change` | all | Change (current password required) |
 | POST | `/auth/users/email/verify` | user | Verify email link |
-| POST | `/auth/{realm}/mfa/totp/enroll` · `/confirm` · DELETE `/mfa/totp` | user, admin | Manage TOTP |
+| POST | `/auth/users/email/resend` | user | Send the verification link again |
+| POST | `/auth/{realm}/mfa/totp/enroll` · `/confirm` · `/disable` | user, admin | Manage TOTP (enrol and disable require the password) |
 | POST | `/auth/{realm}/token` · `/token/refresh` | user, customer | Mobile token flow (Phase 4) |
 | GET | `/auth/users/oauth/google/start` · `/callback` | user | Google sign-in (Phase 2) |
 | POST | `/me/contact/change/start` · `/verify` | customer | Change phone/email |
-| GET · PATCH | `/me/account` | user | Own profile: name, locale, timezone, avatar |
+| GET · PATCH | `/auth/users/account` | user | Own profile: name, phone, locale, timezone, avatar |
+| POST | `/auth/users/account/avatar` | user | Signed upload URL for a new avatar |
+
+The users realm is implemented (A4); exact shapes are in `packages/contracts`
+(`routes.userAuth`, `routes.account`) and the generated OpenAPI document. The own-profile
+endpoints live under `/auth/users/` because `/v1/me` is the customer audience.
 
 ## Events and jobs
 
-Events: `user.signed_up`, `user.email_verified`, `auth.login_succeeded`,
-`auth.login_failed` (audit only), `session.revoked`, `subject.banned`, `customer.created`.
-Jobs: `maintenance/session-cleanup`, `maintenance/challenge-cleanup` (nightly).
+Events: `user.signed_up`, `user.email_verification_requested`, `user.email_verified`,
+`auth.login_succeeded`, `auth.login_failed` (audit only), `auth.password_reset_requested`,
+`auth.password_changed`, `auth.mfa_changed`, `session.revoked`, `subject.banned`,
+`customer.created`. Payloads: `packages/contracts/src/events/identity.ts`.
+
+Emails (verification, reset, new-device alert) are sent by the worker's
+`auth-notifications` consumer, which mints the link when it handles the event, so tokens
+never sit in the outbox.
+
+Jobs: `maintenance/session-cleanup` (marks expired sessions, deletes sessions ended over
+30 days ago), `maintenance/challenge-cleanup` (deletes challenges a week after expiry),
+both nightly.
 
 ## Permissions
 

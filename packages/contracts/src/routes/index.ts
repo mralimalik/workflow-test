@@ -1,7 +1,22 @@
 import type { RouteDefinition } from '../http/route';
+import { accountRoutes } from './account';
+import { userAuthRoutes } from './auth';
 import { fileRoutes } from './files';
 import { healthRoutes } from './health';
 
+export {
+  AUTH_METHODS,
+  PASSWORD_MAX_LENGTH,
+  PASSWORD_MIN_LENGTH,
+  currentUserSchema,
+  loginResultSchema,
+  passwordSchema,
+  sessionInfoSchema,
+  sessionListItemSchema,
+  userSessionSchema,
+  type CurrentUser,
+  type UserSession,
+} from './auth';
 export { fileUploadResultSchema, IMAGE_CONTENT_TYPES } from './files';
 export { healthResultSchema } from './health';
 
@@ -9,6 +24,8 @@ export { healthResultSchema } from './health';
 export const routes = {
   health: healthRoutes,
   files: fileRoutes,
+  userAuth: userAuthRoutes,
+  account: accountRoutes,
 };
 
 /** Flat list of every route in the registry. */
