@@ -1,6 +1,6 @@
 # ADR-0006 · REST with shared Zod / ts-rest contracts
 
-**Status:** Accepted · 2026-10-11
+**Status:** Superseded by [ADR-0014](0014-zod-contracts-openapi.md) · 2026-10-12 (REST, `/v1` and one definition per endpoint still apply)
 
 ## Context
 

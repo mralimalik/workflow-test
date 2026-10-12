@@ -52,7 +52,7 @@ attendra/
 │   ├── customer/     Next.js — customer app + public business pages       (FRONTEND.md)
 │   └── widget/       Preact — embeddable voice/chat widget                (FRONTEND.md)
 ├── packages/
-│   ├── contracts/    Zod schemas + ts-rest API contracts (single source of truth)
+│   ├── contracts/    Zod schemas + API route registry (single source of truth)
 │   ├── api-client/   Typed client built from contracts (web + future mobile)
 │   ├── ui/           Design system (Radix + Tailwind) for web apps
 │   ├── i18n/         Locale utilities and UI translation catalogues

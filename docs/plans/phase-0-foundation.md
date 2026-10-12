@@ -7,6 +7,8 @@
 | Specs | [roadmap §Phase 0](../product/roadmap.md#phase-0--foundation), [ARCHITECTURE.md](../../ARCHITECTURE.md), [BACKEND.md](../../BACKEND.md), [FRONTEND.md](../../FRONTEND.md), feature docs linked per milestone |
 | Status | In progress — A0 |
 
+Library versions and features reviewed for this phase: [stack-review-2026-10.md](stack-review-2026-10.md).
+
 This plan says **in what order** to build, **what** each step delivers, and **how we prove
 it works**. Behaviour, data and API conventions are defined in the linked docs and are
 not repeated here.
@@ -78,7 +80,7 @@ are merged in order; each one is a reviewable PR.
 ### A0 · Repository and tooling
 
 **Build**
-- pnpm workspace + Turborepo; Node 22 pinned (`.nvmrc`, `engines`).
+- pnpm workspace + Turborepo; Node 22 LTS pinned (`.nvmrc`, `engines` ≥ 22.18).
 - Packages: `packages/config` (tsconfig bases, ESLint flat config with
   `eslint-plugin-boundaries`, Prettier), `packages/contracts`, `packages/utils`,
   `packages/server`; apps: `apps/api`, `apps/worker`.
@@ -102,8 +104,10 @@ are merged in order; each one is a reviewable PR.
 - `RequestContext` (AsyncLocalStorage): requestId, traceId, actor, organization, location.
 - pino logging with context bindings, redaction rules, PII masking serializers.
 - Error hierarchy + global exception filter → RFC 9457 problem+json with stable `code`.
-- ts-rest + Zod integration: validation pipe, response serialization, OpenAPI 3.1
-  generation, Swagger UI at `/docs` (non-production).
+- Contracts ([ADR-0014](../adr/0014-zod-contracts-openapi.md)): route registry in
+  `packages/contracts`, `@ContractRoute` decorator, Nest's `StandardSchemaValidationPipe`,
+  schema-based response serialization, OpenAPI 3.1 via zod-openapi, docs UI at `/docs`
+  (non-production), registry ↔ mounted-routes conformance test.
 - `kernel/ids`: UUIDv7, reference codes (Crockford base32, no ambiguous chars).
 - `kernel/time`: `Clock` injection, timezone helpers (Temporal polyfill).
 - Health endpoints `/internal/health/live`, `/internal/health/ready`.

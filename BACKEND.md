@@ -28,10 +28,10 @@ Contents:
 | Concern | Choice | ADR |
 |---|---|---|
 | Runtime | Node.js 22 LTS, TypeScript (strict) | — |
-| Framework | NestJS 11 on the Express adapter (PERN) | [0002](docs/adr/0002-modular-monolith-nestjs.md) |
+| Framework | NestJS 12 on the Express adapter (PERN); built-in features first; CommonJS build | [0002](docs/adr/0002-modular-monolith-nestjs.md), [0013](docs/adr/0013-nestjs-12-built-in-first.md) |
 | Database | PostgreSQL 17 (+ `btree_gist`, `citext`, `pgvector`) | [0001](docs/adr/0001-postgresql.md) |
 | ORM / query builder | Drizzle ORM + drizzle-kit (SQL migrations) | [0003](docs/adr/0003-drizzle-orm.md) |
-| API contracts | Zod schemas + ts-rest contracts in `packages/contracts`; OpenAPI generated | [0006](docs/adr/0006-rest-ts-rest-contracts.md) |
+| API contracts | Zod 4 schemas + typed route registry in `packages/contracts`; Nest-native validation; OpenAPI 3.1 via zod-openapi | [0014](docs/adr/0014-zod-contracts-openapi.md) |
 | Auth | Own implementation: server-side sessions (cookies) + JWT/refresh for mobile | [0005](docs/adr/0005-session-auth-with-token-refresh.md) |
 | Cache, sessions, rate limits | Redis (ioredis) | [0008](docs/adr/0008-redis-and-bullmq.md) |
 | Queues | BullMQ | [0008](docs/adr/0008-redis-and-bullmq.md) |
@@ -52,7 +52,7 @@ apps/
   worker/     src/main.ts         standalone Nest app; imports WorkerModule
   media/      src/main.ts         WebSocket media gateway; imports MediaModule
 packages/
-  contracts/  zod schemas, enums, ts-rest routers, event payload schemas  (shared with frontend)
+  contracts/  zod schemas, enums, route registry, event payload schemas  (shared with frontend)
   server/     (internal, backend-only) — all domain modules, shared kernel, infra
 ```
 
@@ -304,13 +304,19 @@ row locks instead.
 
 ### 5.10 Contracts and OpenAPI
 
-- Every endpoint is declared once in `packages/contracts` as a ts-rest route with Zod
-  schemas for params, query, body, responses and errors.
-- The backend implements contracts with `@ts-rest/nest`; validation uses the same schemas.
-- OpenAPI 3.1 is generated from the contracts at build time and published per audience
-  (business/public API docs; customer and admin specs are internal).
-- Frontends and mobile use `packages/api-client`, built from the same contracts — there
-  is no hand-written request typing anywhere ([ADR-0006](docs/adr/0006-rest-ts-rest-contracts.md)).
+- Every endpoint is declared once in `packages/contracts` as a route in the typed route
+  registry, with Zod schemas for params, query, headers, body, responses per status and
+  error codes.
+- Controllers implement routes with `@ContractRoute(route)`. Requests are validated by
+  Nest's built-in `StandardSchemaValidationPipe` using the route's schemas (the handler
+  gets parsed output), and responses are serialized through the route's response schema.
+  A conformance test fails when a mounted route is missing from the registry, or the
+  other way round.
+- OpenAPI 3.1 is generated from the registry with zod-openapi at build time and published
+  per audience (business/public API docs; customer and admin specs are internal).
+- Frontends and mobile use `packages/api-client`: path types generated from the spec
+  (openapi-typescript) on an openapi-fetch client; CI fails on drift. There is no
+  hand-written request typing anywhere ([ADR-0014](docs/adr/0014-zod-contracts-openapi.md)).
 
 ### 5.11 Webhooks (inbound)
 

@@ -1,6 +1,6 @@
 # ADR-0002 · Modular monolith on NestJS, three process types
 
-**Status:** Accepted · 2026-10-11
+**Status:** Accepted · 2026-10-11 · Framework version superseded by [ADR-0013](0013-nestjs-12-built-in-first.md) (NestJS 12)
 
 ## Context
 

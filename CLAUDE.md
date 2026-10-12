@@ -52,16 +52,19 @@ ask, or propose a doc change — don't invent behaviour silently.
    docs/changelog for the installed version (methods, deprecations, new features worth
    using). Doc websites are often blocked in the cloud sandbox; read the docs source from
    GitHub (`raw.githubusercontent.com/<org>/<repo>/<branch>/…`), `npm view`, or the docs and
-   `.d.ts` files shipped in `node_modules`. Prefer widely used, maintained packages over
-   custom code.
-8. **Report honestly:** say what was tested and how; if something is skipped or failing,
+   `.d.ts` files shipped in `node_modules`.
+8. **Built-in first** ([ADR-0013](docs/adr/0013-nestjs-12-built-in-first.md)): use what Node,
+   NestJS or official `@nestjs/*` packages provide before adding a third-party package;
+   when one is needed, choose a widely used, maintained one over custom code. Prefer
+   mainstream stable versions (e.g. Node LTS) over the newest release.
+9. **Report honestly:** say what was tested and how; if something is skipped or failing,
    say so with the output.
 
 ## Stack (fixed by ADRs)
 
-pnpm + Turborepo monorepo · Node 22 · TypeScript strict · **NestJS 11 (Express adapter)** ·
-**PostgreSQL 17** (`btree_gist`, `citext`, `pgvector`) · **Drizzle ORM** · Zod + **ts-rest**
-contracts (REST, OpenAPI generated) · Redis + **BullMQ** · Socket.IO · pino ·
+pnpm + Turborepo monorepo · Node 22 · TypeScript strict · **NestJS 12 (Express adapter)** ·
+**PostgreSQL 17** (`btree_gist`, `citext`, `pgvector`) · **Drizzle ORM** · **Zod 4** contracts (Nest-native
+validation, OpenAPI 3.1 via zod-openapi, openapi-fetch client — [ADR-0014](docs/adr/0014-zod-contracts-openapi.md)) · Redis + **BullMQ** · Socket.IO · pino ·
 OpenTelemetry · Vitest + Supertest + Playwright · Stripe (Billing + Connect) ·
 OpenAI / Azure OpenAI Realtime · Twilio · Vite + React 19 + TanStack Router/Query +
 Zustand + Tailwind + Radix (dashboard, admin) · Next.js (customer app) · Preact (widget).

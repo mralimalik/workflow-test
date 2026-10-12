@@ -42,15 +42,15 @@ no direct database access ([ADR-0010](docs/adr/0010-frontend-apps.md)).
 
 | Package | Contents | Consumers |
 |---|---|---|
-| `packages/contracts` | Zod schemas, enums, ts-rest contracts, error codes, event payloads | backend, all apps, future mobile |
-| `packages/api-client` | ts-rest client per audience, fetch wrapper (credentials, CSRF header, request id, locale), problem+json → typed `ApiError`, query-key factories, generated React Query hooks helpers | all apps, mobile |
+| `packages/contracts` | Zod schemas, enums, route registry, error codes, event payloads | backend, all apps, future mobile |
+| `packages/api-client` | openapi-fetch client per audience (path types generated from the OpenAPI spec), fetch wrapper (credentials, CSRF header, request id, locale), problem+json → typed `ApiError`, query-key factories, generated React Query hooks helpers | all apps, mobile |
 | `packages/ui` | Design system: tokens, Radix-based primitives (shadcn-style), composites (DataTable, DateRangePicker, TimeGrid, EmptyState, ConfirmDialog), icons | dashboard, admin, customer |
 | `packages/i18n` | i18next setup, locale detection, ICU formatters for dates/money/numbers in a timezone, shared catalogues | all apps |
 | `packages/utils` | Pure helpers: time zones, money, phone formatting (libphonenumber-js), ids | all apps, backend |
 | `packages/config` | tsconfig bases, ESLint/Prettier configs, Tailwind preset | all |
 
 Rules: packages never import from apps; `ui` has no data fetching; `contracts` has no
-runtime dependencies except Zod and ts-rest.
+runtime dependencies except Zod ([ADR-0014](docs/adr/0014-zod-contracts-openapi.md)).
 
 ## 3. Feature-based architecture
 
