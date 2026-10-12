@@ -29,7 +29,7 @@ export const PG = {
 export function pgErrorOf(error: unknown): PgErrorLike | undefined {
   const candidate = error instanceof DrizzleQueryError ? error.cause : error;
   if (typeof candidate === 'object' && candidate !== null && 'code' in candidate) {
-    const code = (candidate).code;
+    const code = candidate.code;
     if (typeof code === 'string' && /^[0-9A-Z]{5}$/.test(code)) return candidate as PgErrorLike;
   }
   return undefined;

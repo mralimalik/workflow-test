@@ -35,6 +35,11 @@ export const envSchema = z
 
     REDIS_CACHE_URL: redisUrl,
     REDIS_QUEUE_URL: redisUrl,
+    /** Key namespace (`att:{namespace}`); defaults to APP_ENV. Tests isolate files with it. */
+    REDIS_KEY_NAMESPACE: z
+      .string()
+      .regex(/^[a-z0-9_-]+$/)
+      .optional(),
 
     API_PUBLIC_URL: httpUrl,
     MEDIA_PUBLIC_URL: wsUrl,

@@ -1,8 +1,11 @@
 import { Module } from '@nestjs/common';
 
+import { CacheModule } from '../kernel/cache/cache.module';
 import { DatabaseModule } from '../kernel/db/database.module';
 import { HealthModule } from '../kernel/health/health.module';
 import { KernelModule, type KernelOptions } from '../kernel/kernel.module';
+import { RateLimitModule } from '../kernel/rate-limit/rate-limit.module';
+import { RedisModule } from '../kernel/redis/redis.module';
 
 /**
  * Composition root for the `api` process (HTTP, webhooks, WebSocket gateway). Feature
@@ -16,6 +19,9 @@ export class ApiModule {
       imports: [
         KernelModule.forRoot({ app: 'api', ...options }),
         DatabaseModule.forRoot({ statementTimeoutMs: 5_000, applicationName: 'attendra-api' }),
+        RedisModule,
+        CacheModule,
+        RateLimitModule,
         HealthModule,
       ],
     };

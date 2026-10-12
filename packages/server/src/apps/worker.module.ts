@@ -1,7 +1,9 @@
 import { Module } from '@nestjs/common';
 
+import { CacheModule } from '../kernel/cache/cache.module';
 import { DatabaseModule } from '../kernel/db/database.module';
 import { KernelModule, type KernelOptions } from '../kernel/kernel.module';
+import { RedisModule } from '../kernel/redis/redis.module';
 
 /**
  * Composition root for the `worker` process (BullMQ consumers, schedulers, outbox relay).
@@ -15,6 +17,8 @@ export class WorkerModule {
       imports: [
         KernelModule.forRoot({ app: 'worker', ...options }),
         DatabaseModule.forRoot({ statementTimeoutMs: 60_000, applicationName: 'attendra-worker' }),
+        RedisModule,
+        CacheModule,
       ],
     };
   }

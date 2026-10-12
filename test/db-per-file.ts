@@ -27,6 +27,8 @@ async function admin<T>(fn: (client: Client) => Promise<T>): Promise<T> {
 await admin((c) => c.query(`CREATE DATABASE "${database}" TEMPLATE "${templateName(base)}"`));
 process.env['DATABASE_MIGRATION_URL'] = withDatabase(ownerUrl, database);
 process.env['DATABASE_URL'] = withDatabase(appUrl, database);
+// Redis is shared; a unique key namespace keeps files from seeing each other's keys.
+process.env['REDIS_KEY_NAMESPACE'] = database.replace(/[^a-z0-9_-]/g, '');
 
 afterAll(async () => {
   await admin((c) => c.query(`DROP DATABASE IF EXISTS "${database}" WITH (FORCE)`));

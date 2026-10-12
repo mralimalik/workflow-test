@@ -16,6 +16,10 @@ export type Audience = (typeof AUDIENCES)[number];
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
 
+/** Named rate-limit policies a route can opt into (BACKEND.md §9.3); `default` always applies. */
+export const RATE_LIMIT_POLICY_NAMES = ['auth.login', 'auth.link', 'public.write'] as const;
+export type RateLimitPolicyName = (typeof RATE_LIMIT_POLICY_NAMES)[number];
+
 type ObjectSchema = z.ZodObject;
 
 export interface RouteResponse {
@@ -51,6 +55,8 @@ export interface RouteDefinition {
   readonly idempotent?: boolean;
   /** Requires `If-Match` and returns `ETag` (BACKEND.md §5.7). */
   readonly versioned?: boolean;
+  /** Extra rate-limit policy for this route, on top of `default`. */
+  readonly rateLimit?: RateLimitPolicyName;
   /** Excluded from published documentation (still type-checked and conformance-tested). */
   readonly internal?: boolean;
 }

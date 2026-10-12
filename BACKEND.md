@@ -288,7 +288,7 @@ row locks instead.
 | `If-Match` / `ETag` | both | §5.7 |
 | `Accept-Language` | request | Locale for translatable content and messages |
 | `X-CSRF-Token` | request | Cookie-authenticated state-changing requests |
-| `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset`, `Retry-After` | response | Rate limiting (IETF draft headers) |
+| `RateLimit-Limit`, `RateLimit-Remaining`, `RateLimit-Reset`, `Retry-After` | response | Rate limiting (IETF draft headers); a route's extra policy adds the same headers suffixed with the policy name (`RateLimit-Remaining-auth.login`) |
 
 ### 5.9 Idempotency
 
