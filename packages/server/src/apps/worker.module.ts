@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 
 import { AuditModule } from '../modules/audit/audit.public';
+import { RealtimePublisherModule } from '../modules/realtime/realtime.public';
 import {
   NotificationsModule,
   NotificationsWorkerModule,
@@ -38,6 +39,7 @@ export class WorkerModule {
         OutboxModule,
         OutboxRelayModule,
         IdempotencyModule,
+        RealtimePublisherModule,
         NotificationsModule,
         NotificationsWorkerModule,
         FeatureFlagsModule,

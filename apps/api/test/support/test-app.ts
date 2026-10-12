@@ -20,12 +20,23 @@ export interface TestApp {
  * Boots the real API module (same pipeline as production via configureHttpApp), with logs
  * captured. Extra controllers can be mounted for kernel-level tests.
  */
-export async function createTestApp(extraControllers: Type[] = []): Promise<TestApp> {
+export interface TestAppOptions {
+  /** Replace providers (by token) with test doubles, e.g. the realtime authenticator. */
+  overrides?: { token: unknown; useValue: unknown }[];
+}
+
+export async function createTestApp(
+  extraControllers: Type[] = [],
+  options: TestAppOptions = {},
+): Promise<TestApp> {
   const logs = new LogCapture();
-  const moduleRef = await Test.createTestingModule({
+  let builder = Test.createTestingModule({
     imports: [ApiModule.forRoot({ logDestination: logs }), DiscoveryModule],
     controllers: extraControllers,
-  }).compile();
+  });
+  for (const o of options.overrides ?? [])
+    builder = builder.overrideProvider(o.token).useValue(o.useValue);
+  const moduleRef = await builder.compile();
   const app = moduleRef.createNestApplication<NestExpressApplication>({
     bufferLogs: true,
     bodyParser: false,

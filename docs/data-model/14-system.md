@@ -55,9 +55,10 @@ PK `(id, created_at)`.
 | `attempts` | smallint | no | `0` | |
 | `last_error` | text | yes | | |
 
-Index: `(created_at) WHERE published_at IS NULL`. The outbox is written and read only by
-the outbox module under the platform scope (no tenant RLS on this table; the app role can
-only `INSERT`, the relay role can `SELECT/UPDATE`).
+Index: `(created_at, id) WHERE published_at IS NULL`. Producers insert in their own
+transaction (`tenant_isolation` for tenant events, `global_insert` for organization-less
+ones); only the relay reads and updates, under the `platform_scope` policy. The runtime
+role has no `DELETE`; old partitions are dropped by `partition-maintain`.
 
 ## inbound_webhook_events
 

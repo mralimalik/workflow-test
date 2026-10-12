@@ -166,6 +166,7 @@ modules/bookings/
 | `files` | `files` | `FilesService`, `StorageProvider` |
 | `feature-flags` | `feature_flags`, `feature_flag_overrides` | `FeatureFlags` |
 | `inbound-webhooks` | `inbound_webhook_events` | `InboundWebhookStore` |
+| `realtime` | — | `RealtimePublisher` (Socket.IO gateway + `realtime/fanout` in the api process) |
 | `analytics` | read models (later) | `AnalyticsQueries` |
 
 ## 4. Request lifecycle
@@ -639,6 +640,7 @@ Sliding-window counters per policy:
 | Queue | Jobs | Trigger | Notes |
 |---|---|---|---|
 | `outbox` | (relay loop, not a BullMQ queue) | NOTIFY / poll | single active leader via advisory lock |
+| `events` | one job per (event, consumer) | outbox relay | job id `{eventId}__{consumer}`; delivered to `@HandlesEvents` providers |
 | `notifications` | `send` | events | per-provider concurrency limits; retries with backoff; respects suppression |
 | `reminders` | `booking-reminder` | `booking.confirmed/rescheduled` (delayed) | job id `reminder__{bookingId}__{offset}` → replace on reschedule (BullMQ job ids cannot contain `:`) |
 | `holds` | `expire-hold`, `expire-draft-order` | delayed at creation | sweeper every minute as safety net |
@@ -650,7 +652,9 @@ Sliding-window counters per policy:
 | `billing` | `sync-stripe-object`, `dunning-transition` | Stripe webhooks / repeatable | |
 | `realtime` | `fanout` | most events | emits Socket.IO events to org/location rooms |
 | `webhooks-out` | `deliver` | events | signed, retries with exponential backoff up to 24 h |
-| `maintenance` | `retention-purge`, `partition-maintain`, `idempotency-cleanup`, `session-cleanup` | repeatable (nightly) | platform scope, audited |
+| `maintenance` | `retention-purge`, `partition-maintain`, `idempotency-cleanup`, `session-cleanup` | Job Schedulers (nightly) | one processor dispatching `@MaintenanceTaskProvider` tasks by name; platform scope |
+| `inbound-webhooks` | `process` | webhook received | dispatches to `@HandlesWebhooks(provider)` handlers |
+| `dead-letter` | (copies of jobs that exhausted retries) | `AppProcessor` | kept for inspection and replay; logged at `error` |
 
 **Job conventions:** job data is minimal (ids, not full objects) and includes
 `organizationId`, `traceContext`, `requestId`; processors open their own tenant
@@ -659,7 +663,10 @@ dead-letter state with an alert; every processor is idempotent.
 
 ### 10.4 Real-time push (dashboards)
 
-Socket.IO namespace `/business`, authenticated with the user session during handshake.
+Socket.IO namespace `/business` (Redis Streams adapter), authenticated during the handshake
+(namespace middleware: unauthenticated clients never connect) through the
+`SocketAuthenticator` port; room joins go through the `RealtimeScopeChecker` port. Both
+default to deny-all until the auth (A4) and access (A8) modules provide them.
 Rooms: `org:{orgId}`, `loc:{locationId}` (joined only if in scope). Server emits small
 `{ type, id, locationId }` notifications; clients invalidate the matching React Query
 keys and refetch through the REST API (no data duplication over the socket). Live call
@@ -730,6 +737,12 @@ never on `title` or `detail`.
 - Every new tenant table must include in its migration: `organization_id` + FK, RLS
   enable/force, `tenant_isolation` policy, indexes leading with `organization_id`. A CI
   check fails migrations that create a table in a tenant module without RLS.
+- **Partitioned tables** (`audit_logs`, `outbox_events`, `notifications`,
+  `inbound_webhook_events`) are created by hand-written SQL migrations; their Drizzle
+  definitions live in `infrastructure/*.partitioned.ts` (outside drizzle-kit's glob) for
+  queries only. Partitions are created ahead and dropped by `partition-maintain` through
+  `SECURITY DEFINER` functions that also revoke the runtime role's direct access to each
+  partition (partitions do not inherit the parent's RLS).
 - Migrations run as a separate step with the owner role before app rollout.
 - Seed scripts: platform plans, system roles, default notification templates, local demo
   tenant (local only).

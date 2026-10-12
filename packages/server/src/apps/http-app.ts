@@ -11,6 +11,8 @@ import { Logger } from 'nestjs-pino';
 import { AppConfig } from '../kernel/config/app-config';
 import { requestContextMiddleware } from '../kernel/context/request-context.middleware';
 import { IdempotencyInterceptor } from '../modules/idempotency/idempotency.public';
+import { RedisStreamsIoAdapter } from '../modules/realtime/realtime.public';
+import { REDIS_CACHE, REDIS_KEY_PREFIX } from '../kernel/redis/redis.module';
 import { ProblemDetailsFilter } from '../kernel/errors/problem-details.filter';
 import { corsDelegate } from '../kernel/http/cors';
 import { buildOpenApiDocument } from '../kernel/http/openapi';
@@ -81,6 +83,11 @@ export function configureHttpApp(app: NestExpressApplication): void {
     new StandardSchemaSerializerInterceptor(app.get(Reflector)),
   );
   app.useGlobalFilters(new ProblemDetailsFilter());
+
+  // WebSockets: Socket.IO with the Redis Streams adapter (BACKEND.md §10.4).
+  app.useWebSocketAdapter(
+    new RedisStreamsIoAdapter(app, app.get(REDIS_CACHE), app.get<string>(REDIS_KEY_PREFIX)),
+  );
 
   app.enableShutdownHooks();
 

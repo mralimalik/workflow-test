@@ -1,6 +1,10 @@
 import { Module } from '@nestjs/common';
 
 import { AuditModule } from '../modules/audit/audit.public';
+import {
+  RealtimeGatewayModule,
+  RealtimePublisherModule,
+} from '../modules/realtime/realtime.public';
 import { NotificationsModule } from '../modules/notifications/notifications.public';
 import { FeatureFlagsModule } from '../modules/feature-flags/feature-flags.public';
 import { InboundWebhooksModule } from '../modules/inbound-webhooks/inbound-webhooks.public';
@@ -33,6 +37,8 @@ export class ApiModule {
         AuditModule,
         OutboxModule,
         IdempotencyModule,
+        RealtimePublisherModule,
+        RealtimeGatewayModule,
         NotificationsModule,
         FeatureFlagsModule,
         InboundWebhooksModule,

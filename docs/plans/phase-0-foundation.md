@@ -5,7 +5,7 @@
 | Goal | A secure, multi-tenant platform skeleton — auth, businesses, locations, opening hours, team and access, admin basics — fully tested, on which every later feature is built |
 | Order | **Part A: backend** (complete and verified) → **Part B: dashboard + admin UI** (starts after design references are shared and the design system is approved) |
 | Specs | [roadmap §Phase 0](../product/roadmap.md#phase-0--foundation), [ARCHITECTURE.md](../../ARCHITECTURE.md), [BACKEND.md](../../BACKEND.md), [FRONTEND.md](../../FRONTEND.md), feature docs linked per milestone |
-| Status | In progress — A3 |
+| Status | In progress — A4 |
 
 Library versions and features reviewed for this phase: [stack-review-2026-10.md](stack-review-2026-10.md).
 
@@ -166,11 +166,13 @@ are merged in order; each one is a reviewable PR.
   `org:` / `loc:` rooms with scope checks, `realtime/fanout` consumer.
 
 **Done when**
-- [ ] Integration: event written in a rolled-back transaction is never published; committed one is published exactly once even with 2 relay instances.
-- [ ] Integration: same `Idempotency-Key` + same body → identical stored response; different body → `422 idempotency_key_reused`.
-- [ ] Integration: cache entry invalidated after the corresponding event; stampede test issues one DB load for 50 concurrent reads.
-- [ ] Email for a queued notification arrives in Mailpit.
-- [ ] Socket client in another organization cannot join `org:{otherOrg}`.
+- [x] Integration: event written in a rolled-back transaction is never published; committed one is published exactly once even with 2 relay instances.
+- [x] Integration: same `Idempotency-Key` + same body → identical stored response; different body → `422 idempotency_key_reused`.
+- [x] Integration: cache entry invalidated after the corresponding event; stampede test issues one DB load for 50 concurrent reads.
+- [x] Email for a queued notification arrives in Mailpit.
+- [x] Socket client in another organization cannot join `org:{otherOrg}` (proven with test
+  doubles for the authenticator and scope checker; the session and membership
+  implementations plug in at A4 and A8).
 
 ### A4 · User authentication
 
@@ -364,7 +366,7 @@ Plus visual checks (light/dark, one RTL locale) and axe accessibility checks on 
 | A0 Repository and tooling | ✅ |
 | A1 Backend kernel | ✅ |
 | A2 Database foundation | ✅ |
-| A3 Platform modules | ☐ |
+| A3 Platform modules | ✅ |
 | A4 User authentication | ☐ |
 | A5 Platform admins | ☐ |
 | A6 Organizations | ☐ |
