@@ -11,6 +11,7 @@ export const PARTITIONED_TABLES: readonly {
 }[] = [
   { table: 'audit_logs' },
   { table: 'inbound_webhook_events' },
+  { table: 'notifications' },
   { table: 'outbox_events', drop: { keep: '14 days', stillNeeded: 'published_at IS NULL' } },
 ];
 

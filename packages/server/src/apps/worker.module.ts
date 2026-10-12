@@ -1,6 +1,10 @@
 import { Module } from '@nestjs/common';
 
 import { AuditModule } from '../modules/audit/audit.public';
+import {
+  NotificationsModule,
+  NotificationsWorkerModule,
+} from '../modules/notifications/notifications.public';
 import { FeatureFlagsModule } from '../modules/feature-flags/feature-flags.public';
 import {
   InboundWebhooksModule,
@@ -34,6 +38,8 @@ export class WorkerModule {
         OutboxModule,
         OutboxRelayModule,
         IdempotencyModule,
+        NotificationsModule,
+        NotificationsWorkerModule,
         FeatureFlagsModule,
         InboundWebhooksModule,
         InboundWebhooksWorkerModule,

@@ -2,7 +2,10 @@
   "extends": "./packages/config/tsconfig/library.json",
   "compilerOptions": {
     "noEmit": true,
-    "types": ["node"]
+    "types": ["node"],
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "strictPropertyInitialization": false
   },
   "include": ["vitest.config.ts", "test"]
 }

@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 
 import { AuditModule } from '../modules/audit/audit.public';
+import { NotificationsModule } from '../modules/notifications/notifications.public';
 import { FeatureFlagsModule } from '../modules/feature-flags/feature-flags.public';
 import { InboundWebhooksModule } from '../modules/inbound-webhooks/inbound-webhooks.public';
 import { FilesModule } from '../modules/files/files.public';
@@ -32,6 +33,7 @@ export class ApiModule {
         AuditModule,
         OutboxModule,
         IdempotencyModule,
+        NotificationsModule,
         FeatureFlagsModule,
         InboundWebhooksModule,
         FilesModule,

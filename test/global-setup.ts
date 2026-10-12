@@ -4,6 +4,7 @@ import path from 'node:path';
 import { Client } from 'pg';
 
 import { runMigrations } from '../packages/server/scripts/lib/migrate';
+import { runSeeds } from '../packages/server/scripts/lib/seed';
 import { databaseOf, requireEnv, templateName, testDatabasePrefix, withDatabase } from './db-urls';
 
 /**
@@ -33,4 +34,6 @@ export default async function setup(): Promise<void> {
     await admin.end();
   }
   await runMigrations(withDatabase(ownerUrl, template));
+  // Platform reference data (templates, plans, roles) is part of every database.
+  await runSeeds(withDatabase(ownerUrl, template), 'local');
 }

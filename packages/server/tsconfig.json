@@ -1,7 +1,6 @@
 {
   "extends": "@attendra/config/tsconfig/node.json",
   "compilerOptions": {
-    "rootDir": ".",
     "noEmit": true
   },
   "include": ["src", "scripts", "test", "*.config.ts"]
