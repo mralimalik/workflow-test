@@ -1,0 +1,40 @@
+{
+  "name": "@attendra/api-client",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Typed API client for web apps and mobile, generated from the OpenAPI document (ADR-0014)",
+  "type": "module",
+  "sideEffects": false,
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    }
+  },
+  "files": [
+    "dist",
+    "openapi.json"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "generate": "openapi-typescript openapi.json -o src/generated/schema.d.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "openapi-fetch": "0.17.0"
+  },
+  "devDependencies": {
+    "@attendra/config": "workspace:*",
+    "openapi-typescript": "7.13.0",
+    "tsdown": "0.23.1"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "extends": "@attendra/config/tsconfig/node.json",
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": ["src", "scripts", "test", "*.config.ts"]
+}

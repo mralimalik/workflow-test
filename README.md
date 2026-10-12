@@ -1,56 +1,137 @@
-# Agent Studio
+# Attendra
 
-A learning project: a full-stack app for visually building agentic
-workflows — single-agent or multi-agent, each agent with its own
-instructions, model settings, and tools — plus a chat window to actually run
-and test what you built.
+**The AI front desk for every business.**
+
+Attendra is a multi-tenant SaaS platform that gives any appointment-, reservation- or
+order-based business an AI agent that answers phone calls, website and in-app
+conversations (and later WhatsApp), books appointments, takes reservations and food
+orders, and hands off to a human when it should. Businesses manage everything —
+locations, services, staff, menus, hours, agent behaviour — from a dashboard. Customers
+get one global account to see and manage everything they have booked or ordered across
+every business on the platform.
+
+> Status: **design phase.** This repository currently holds the product and technical
+> documentation. Code is built phase by phase, following [the roadmap](docs/product/roadmap.md).
+
+---
+
+## Documentation map
+
+Start here, in this order:
+
+| # | Document | What it answers |
+|---|---|---|
+| 1 | [docs/product/prd.md](docs/product/prd.md) | What we are building, for whom, and why |
+| 2 | [docs/product/requirements.md](docs/product/requirements.md) | Numbered functional and non-functional requirements |
+| 3 | [docs/product/roadmap.md](docs/product/roadmap.md) | Build phases and what ships in each |
+| 4 | [ARCHITECTURE.md](ARCHITECTURE.md) | System architecture: components, runtime processes, data flow |
+| 5 | [BACKEND.md](BACKEND.md) | Backend structure, API conventions, auth, logging, caching, jobs |
+| 6 | [FRONTEND.md](FRONTEND.md) | Frontend apps, feature-based architecture, state management |
+| 7 | [docs/data-model/README.md](docs/data-model/README.md) | Data model conventions and the full table catalogue |
+| 8 | [docs/features/](docs/features/README.md) | One document per feature: rules, flows, endpoints, events |
+| 9 | [docs/adr/](docs/adr/README.md) | Architecture decision records: why each major choice was made |
+| — | [docs/product/glossary.md](docs/product/glossary.md) | Shared vocabulary used across all documents |
+
+Documentation rules (so the docs never contradict each other) are in
+[docs/README.md](docs/README.md).
+
+---
+
+## Repository layout (target)
+
+The monorepo is created in Phase 0. Target layout:
 
 ```
-client/   React + TypeScript app: the workflow builder, tools UI, settings, chat tester
-server/   Not built yet — see server/README.md for the planned Express/Mongo/LangGraph.js shape
+attendra/
+├── apps/
+│   ├── api/          NestJS — HTTP API, webhooks, WebSocket gateway      (BACKEND.md)
+│   ├── worker/       NestJS — BullMQ consumers, schedulers, outbox relay  (BACKEND.md)
+│   ├── media/        Node — real-time voice media gateway                (ARCHITECTURE.md §6)
+│   ├── dashboard/    Vite + React — business dashboard                   (FRONTEND.md)
+│   ├── admin/        Vite + React — platform super-admin console          (FRONTEND.md)
+│   ├── customer/     Next.js — customer app + public business pages       (FRONTEND.md)
+│   └── widget/       Preact — embeddable voice/chat widget                (FRONTEND.md)
+├── packages/
+│   ├── contracts/    Zod schemas + API route registry (single source of truth)
+│   ├── api-client/   Typed client built from contracts (web + future mobile)
+│   ├── ui/           Design system (Radix + Tailwind) for web apps
+│   ├── i18n/         Locale utilities and UI translation catalogues
+│   ├── utils/        Pure shared helpers (time, money, ids)
+│   └── config/       Shared tsconfig, lint and format configs
+├── docs/             Product, data model, features, ADRs
+├── docker-compose.yml
+├── .env.example
+├── ARCHITECTURE.md
+├── BACKEND.md
+└── FRONTEND.md
 ```
 
-## Status
+---
 
-This pass built the **client only**, on purpose — no backend exists yet.
-Everything that will eventually be "server data" (the workflow document, the
-tools list, settings) goes through a small repository layer
-(`client/src/shared/api/*Repository.ts`) that's already async and already
-shaped like a REST client; it just reads/writes `localStorage` for now. The
-chat tester calls Azure OpenAI directly from the browser (bring your own
-endpoint/key/deployment in Settings) so the whole builder → test loop
-actually works today, with no backend required.
+## Local development
 
-See `client/README.md` for the architecture in detail, and `server/README.md`
-for what the Express/MongoDB/LangGraph.js backend will look like and exactly
-where it plugs in.
+### Requirements
 
-## Quick start
+- Node.js 22 LTS (`.nvmrc`), pnpm 10 (`corepack enable` picks the pinned version)
+- PostgreSQL 17 with the `pgvector`, `btree_gist` and `citext` extensions
+- Redis 7
+
+### Option A — Docker (recommended)
 
 ```bash
-cd client
-npm install
-npm run dev
+cp .env.example .env
+docker compose up -d          # postgres (with pgvector), redis, mailpit
 ```
 
-Open the app, go to **Settings** and add your Azure OpenAI endpoint, API
-key, and deployment name, then build a workflow on the **Builder** page and
-try it on the **Chat tester** page.
+| Service | Address | Credentials |
+|---|---|---|
+| PostgreSQL | `localhost:5432` | db `attendra`, user `attendra`, password `attendra` |
+| Redis | `localhost:6379` | no password (local only) |
+| Mailpit (dev email inbox) | SMTP `localhost:1025`, UI http://localhost:8025 | — |
 
-## What's here
+### Option B — Native installs
 
-- **Builder** — a React Flow canvas: drag out Start / Agent / Router / End
-  nodes, wire them together, configure each agent's prompt/model/tools in a
-  side panel. Autosaves. Live validation (unreachable nodes, missing
-  connections, etc.).
-- **Tools** — define functions agents can call. `client`-executed tools run
-  a JS handler right in the browser (API calls, UI state updates — anything
-  this browser is positioned to do) and hand the result back to the agent to
-  resume. `server`-executed tools are a spec for the backend to fulfill
-  later; today they return a clearly labeled simulated result.
-- **Chat tester** — a real conversation against your workflow, with a
-  read-only mini graph that highlights the active node live and a
-  step-by-step run trace, so multi-agent handoffs and routing decisions are
-  visible as they happen.
-- **Settings** — your Azure OpenAI connection, with a one-click connection
-  test.
+Create the same database and user so `.env.example` works unchanged:
+
+```sql
+CREATE USER attendra WITH PASSWORD 'attendra' CREATEDB;
+CREATE DATABASE attendra OWNER attendra;
+\c attendra
+CREATE EXTENSION IF NOT EXISTS vector;
+CREATE EXTENSION IF NOT EXISTS btree_gist;
+CREATE EXTENSION IF NOT EXISTS citext;
+-- Runtime role: row-level security applies to it (BACKEND.md §7).
+CREATE ROLE attendra_app LOGIN PASSWORD 'attendra_app' NOBYPASSRLS;
+GRANT CONNECT ON DATABASE attendra TO attendra_app;
+```
+
+Run Redis on the default port with `maxmemory-policy noeviction` (required by BullMQ).
+
+> These credentials are for local development only. Real environments read secrets
+> from the environment, never from committed files — see [BACKEND.md §12](BACKEND.md#12-configuration-and-secrets).
+
+### First run
+
+```bash
+pnpm install
+pnpm db:migrate          # applies migrations as the owner role
+pnpm db:seed             # idempotent seeds
+pnpm dev                 # api on :4000 + worker, rebuilding on change
+```
+
+### Everyday commands
+
+| Command | What it does |
+|---|---|
+| `pnpm lint` / `pnpm lint:fix` | ESLint (type-aware + architectural boundaries) |
+| `pnpm format` / `pnpm format:check` | Prettier |
+| `pnpm typecheck` | `tsc --noEmit` in every package |
+| `pnpm test` | unit → integration → e2e (`test:unit`, `test:int`, `test:e2e`); integration and e2e need the services above |
+| `pnpm build` | builds all packages and apps (Turborepo, cached) |
+| `pnpm db:generate` | generates a migration from Drizzle schema changes (review the SQL) |
+| `pnpm db:reset` | drops and re-migrates the **local** database (refuses elsewhere) |
+| `pnpm api:client` | regenerates `packages/api-client` (OpenAPI from the route registry → typed client); CI fails if stale |
+| `pnpm api:scenarios` | runs API scenarios against a running API → `reports/api-scenarios/<timestamp>.md` |
+| `pnpm admin:create --email <e> --name <n> [--role super_admin]` | creates a platform admin and prints a one-time set-password link (72 h); the only way to create the first admin |
+
+Manual requests: `apps/api/http/*.http` (VS Code REST Client / JetBrains HTTP Client).

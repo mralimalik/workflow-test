@@ -1,0 +1,133 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  TURBO_TELEMETRY_DISABLED: '1'
+  NODE_ENV: test
+  APP_ENV: local
+  DATABASE_MIGRATION_URL: postgres://attendra:attendra@localhost:5432/attendra
+  DATABASE_URL: postgres://attendra_app:attendra_app@localhost:5432/attendra
+  REDIS_CACHE_URL: redis://localhost:6379/0
+  REDIS_QUEUE_URL: redis://localhost:6379/1
+  MAILPIT_API_URL: http://localhost:8025
+
+jobs:
+  verify:
+    name: Lint, typecheck, test, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: attendra
+          POSTGRES_PASSWORD: attendra
+          POSTGRES_DB: attendra
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U attendra -d attendra"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+      mailpit:
+        image: axllent/mailpit:v1.21
+        ports: ['1025:1025', '8025:8025']
+      redis:
+        image: redis:7.4-alpine
+        ports: ['6379:6379']
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Environment (local defaults; CI variables above take precedence)
+        run: cp .env.example .env
+
+      - name: Prepare database (same init as docker compose)
+        env:
+          PGPASSWORD: attendra
+        run: |
+          psql -h localhost -U attendra -d attendra -v ON_ERROR_STOP=1 -f infra/postgres/init/001-extensions.sql
+          # Service containers cannot take a command, and the runner has no redis-cli:
+          # configure noeviction (required by BullMQ) inside the service container.
+          docker exec ${{ job.services.redis.id }} redis-cli CONFIG SET maxmemory-policy noeviction
+
+      - name: Format
+        run: pnpm format:check
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Unit tests
+        run: pnpm test:unit
+
+      - name: Migrate
+        run: pnpm db:migrate
+
+      - name: RLS check (every tenant table has RLS enabled, forced, tenant_isolation)
+        run: pnpm db:check-rls
+
+      - name: Integration tests
+        run: pnpm test:int
+
+      - name: E2E tests
+        run: pnpm test:e2e
+
+      - name: Build
+        run: pnpm build
+
+      - name: Generated API client is up to date
+        run: |
+          pnpm api:client
+          git diff --exit-code -- packages/api-client || {
+            echo "::error::packages/api-client is out of date. Run 'pnpm api:client' and commit the result."
+            exit 1
+          }
+
+  security:
+    name: Secret scan and dependency audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Gitleaks
+        run: |
+          docker run --rm -v "$PWD:/repo" ghcr.io/gitleaks/gitleaks:v8.30.1 \
+            git /repo --redact --verbose --exit-code 1
+
+      - uses: pnpm/action-setup@v6
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+          # No cache: this job never installs (pnpm audit reads only the lockfile).
+
+      - name: Dependency audit (production, high+)
+        run: pnpm audit --prod --audit-level high

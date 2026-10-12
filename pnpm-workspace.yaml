@@ -1,0 +1,33 @@
+packages:
+  - apps/*
+  - packages/*
+
+# Build scripts that are allowed to run on install (pnpm 10 blocks others by default).
+onlyBuiltDependencies:
+  - '@swc/core'
+  - esbuild
+  - '@nestjs/core'
+  - unrs-resolver
+
+overrides:
+  # GHSA-2w6w-674q-4c4q and related: fixed in 4.7.10 (pulled in by eslint-plugin-boundaries).
+  handlebars: ^4.7.10
+
+auditConfig:
+  ignoreGhsas:
+    # braces <=3.0.3 stack exhaustion; no patched release exists. Reached only through
+    # eslint-plugin-boundaries → micromatch at lint time, on glob patterns we author.
+    # Not part of any deployed app. Re-check when micromatch/braces publish a fix.
+    - GHSA-vfj7-8cjw-p6xm
+
+# Install scripts we deliberately do not run: usage telemetry (swagger-ui-dist) and a
+# protobufjs version notice. Neither affects behaviour.
+ignoredBuiltDependencies:
+  - '@scarf/scarf'
+  - protobufjs
+
+peerDependencyRules:
+  allowedVersions:
+    # openapi-typescript 7.13 declares typescript ^5 but only uses the compiler's printer;
+    # verified to generate correct types with TypeScript 6 (packages/api-client tests).
+    openapi-typescript>typescript: '6'
