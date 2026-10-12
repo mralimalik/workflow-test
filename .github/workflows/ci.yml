@@ -57,6 +57,9 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
+      - name: Environment (local defaults; CI variables above take precedence)
+        run: cp .env.example .env
+
       - name: Prepare database (same init as docker compose)
         env:
           PGPASSWORD: attendra
@@ -89,6 +92,14 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+      - name: Generated API client is up to date
+        run: |
+          pnpm api:client
+          git diff --exit-code -- packages/api-client || {
+            echo "::error::packages/api-client is out of date. Run 'pnpm api:client' and commit the result."
+            exit 1
+          }
 
   security:
     name: Secret scan and dependency audit

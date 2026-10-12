@@ -182,7 +182,7 @@ Order of execution for every HTTP request in `api`:
 7. CsrfGuard                 → cookie-authenticated, state-changing requests only
 8. TenantGuard               → resolve :orgId (+ :locationId) → verify membership/scope → RequestContext
 9. PermissionGuard           → @RequirePermission('bookings.update') against membership
-10. ZodValidationPipe        → validate params/query/body against the contract
+10. ContractValidationPipe   → Nest's StandardSchemaValidationPipe with the route's Zod schemas (422 on failure)
 11. IdempotencyInterceptor   → for POSTs with Idempotency-Key (§5.9)
 12. Controller → application service (opens tenant transaction §7.3)
 13. Response serialization   → contract schema (strips unknown fields)
@@ -513,6 +513,8 @@ export type NewBookingRow = typeof bookings.$inferInsert;
   transitions at `info`, provider calls (provider, operation, duration, status — never
   payloads) at `info`, expected business rejections at `warn`, unexpected errors at
   `error` with stack.
+- Error codes are logged as `errorCode` (the key `code` is redacted because it usually
+  holds a one-time code).
 - What not to log: request/response bodies, transcripts, prompts, secrets, full PII.
   Business history belongs in `audit_logs` and `*_events` tables, not logs.
 
@@ -752,7 +754,7 @@ their names where applicable (`it('FR-SCH-003 rejects overlapping allocations', 
 - **Test files:** `*.test.ts` unit · `*.int.test.ts` integration · `*.e2e.test.ts` API e2e
   (Vitest projects `unit`, `integration`, `e2e`).
 - **Dates:** never `new Date()` in domain code — inject a `Clock`. Time zone math uses
-  `@js-temporal/polyfill` (or `date-fns-tz`) behind `kernel/time`.
+  `temporal-polyfill` (stable 1.x Temporal implementation) behind `kernel/time`.
 - **IDs:** UUIDv7 generated in the app (`kernel/ids`), never DB `serial`.
 - **No business logic in controllers, guards, or SQL triggers** (triggers only for
   `updated_at` and partition routing if needed).

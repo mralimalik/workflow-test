@@ -1,6 +1,16 @@
 # Manual exploration (VS Code REST Client / JetBrains HTTP Client).
 # Select the "local" environment from http-client.env.json. Collections are added per feature.
 
-### Unknown route → 404
+### Liveness
+GET {{baseUrl}}/internal/health/live
+
+### Readiness (Postgres, Redis)
+GET {{baseUrl}}/internal/health/ready
+
+### Unknown route → 404 problem+json
 GET {{baseUrl}}/v1/does-not-exist
 Accept: application/json
+X-Request-Id: manual-test-0001
+
+### OpenAPI document (non-production)
+GET {{baseUrl}}/docs/openapi.json

@@ -19,3 +19,15 @@ auditConfig:
     # eslint-plugin-boundaries → micromatch at lint time, on glob patterns we author.
     # Not part of any deployed app. Re-check when micromatch/braces publish a fix.
     - GHSA-vfj7-8cjw-p6xm
+
+# Install scripts we deliberately do not run: usage telemetry (swagger-ui-dist) and a
+# protobufjs version notice. Neither affects behaviour.
+ignoredBuiltDependencies:
+  - '@scarf/scarf'
+  - protobufjs
+
+peerDependencyRules:
+  allowedVersions:
+    # openapi-typescript 7.13 declares typescript ^5 but only uses the compiler's printer;
+    # verified to generate correct types with TypeScript 6 (packages/api-client tests).
+    openapi-typescript>typescript: '6'

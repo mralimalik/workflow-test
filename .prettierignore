@@ -8,3 +8,4 @@ reports
 packages/server/migrations/meta
 infra
 **/*.md
+**/generated/**

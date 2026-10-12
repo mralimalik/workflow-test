@@ -1,0 +1,233 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Attendra API",
+    "version": "0.0.0",
+    "description": "Attendra API v1"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:4000"
+    }
+  ],
+  "paths": {
+    "/internal/health/live": {
+      "get": {
+        "operationId": "health.live",
+        "summary": "Liveness: the process is up",
+        "tags": ["Health"],
+        "responses": {
+          "200": {
+            "description": "Process is alive",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResult"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "`internal_error` — Something went wrong",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal/health/ready": {
+      "get": {
+        "operationId": "health.ready",
+        "summary": "Readiness: dependencies (Postgres, Redis) are reachable",
+        "tags": ["Health"],
+        "responses": {
+          "200": {
+            "description": "Ready to serve traffic",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResult"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "`internal_error` — Something went wrong",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Problem"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "A dependency is down",
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResult"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "HealthResult": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/__schema0"
+          },
+          "info": {
+            "$ref": "#/components/schemas/__schema1"
+          },
+          "error": {
+            "$ref": "#/components/schemas/__schema3"
+          },
+          "details": {
+            "$ref": "#/components/schemas/__schema4"
+          }
+        },
+        "required": ["status", "details"],
+        "additionalProperties": false
+      },
+      "Problem": {
+        "type": "object",
+        "properties": {
+          "type": {
+            "$ref": "#/components/schemas/__schema5"
+          },
+          "title": {
+            "$ref": "#/components/schemas/__schema6"
+          },
+          "status": {
+            "$ref": "#/components/schemas/__schema7"
+          },
+          "code": {
+            "$ref": "#/components/schemas/__schema8"
+          },
+          "detail": {
+            "$ref": "#/components/schemas/__schema9"
+          },
+          "requestId": {
+            "$ref": "#/components/schemas/__schema10"
+          },
+          "errors": {
+            "$ref": "#/components/schemas/__schema11"
+          }
+        },
+        "required": ["type", "title", "status", "code", "detail", "requestId"],
+        "additionalProperties": false,
+        "description": "RFC 9457 problem details"
+      },
+      "FieldError": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "$ref": "#/components/schemas/__schema12"
+          },
+          "code": {
+            "$ref": "#/components/schemas/__schema13"
+          },
+          "message": {
+            "$ref": "#/components/schemas/__schema14"
+          }
+        },
+        "required": ["path", "code", "message"],
+        "additionalProperties": false
+      },
+      "__schema0": {
+        "type": "string",
+        "enum": ["ok", "error", "shutting_down", "degraded"]
+      },
+      "__schema1": {
+        "type": "object",
+        "propertyNames": {
+          "type": "string"
+        },
+        "additionalProperties": {
+          "$ref": "#/components/schemas/__schema2"
+        }
+      },
+      "__schema2": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": ["up", "down", "degraded"]
+          }
+        },
+        "required": ["status"],
+        "additionalProperties": {}
+      },
+      "__schema3": {
+        "type": "object",
+        "propertyNames": {
+          "type": "string"
+        },
+        "additionalProperties": {
+          "$ref": "#/components/schemas/__schema2"
+        }
+      },
+      "__schema4": {
+        "type": "object",
+        "propertyNames": {
+          "type": "string"
+        },
+        "additionalProperties": {
+          "$ref": "#/components/schemas/__schema2"
+        }
+      },
+      "__schema5": {
+        "type": "string",
+        "format": "uri"
+      },
+      "__schema6": {
+        "type": "string"
+      },
+      "__schema7": {
+        "type": "integer",
+        "minimum": -9007199254740991,
+        "maximum": 9007199254740991
+      },
+      "__schema8": {
+        "type": "string",
+        "description": "Stable machine-readable error code"
+      },
+      "__schema9": {
+        "type": ["string", "null"]
+      },
+      "__schema10": {
+        "type": ["string", "null"]
+      },
+      "__schema11": {
+        "type": "array",
+        "items": {
+          "$ref": "#/components/schemas/FieldError"
+        }
+      },
+      "__schema12": {
+        "type": "string",
+        "description": "Dot path to the field, e.g. `address.city`",
+        "example": "email"
+      },
+      "__schema13": {
+        "type": "string",
+        "example": "invalid_format"
+      },
+      "__schema14": {
+        "type": "string"
+      }
+    }
+  }
+}

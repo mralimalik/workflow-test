@@ -24,7 +24,8 @@
     "db:generate": "pnpm --filter @attendra/server db:generate",
     "db:seed": "pnpm --filter @attendra/server db:seed",
     "db:reset": "pnpm --filter @attendra/server db:reset",
-    "api:scenarios": "pnpm --filter @attendra/api scenarios"
+    "api:scenarios": "pnpm --filter @attendra/api scenarios",
+    "api:client": "turbo run build --filter=@attendra/server... --output-logs=errors-only && pnpm --filter @attendra/api openapi:export && pnpm --filter @attendra/api-client generate && prettier --write packages/api-client/openapi.json --log-level warn"
   },
   "devDependencies": {
     "@attendra/config": "workspace:*",

@@ -23,6 +23,7 @@ export function createConfig({ tsconfigRootDir, ignores = [] }) {
         '**/coverage/**',
         '**/.turbo/**',
         '**/test/fixtures/**',
+        '**/generated/**',
         'reports/**',
         '.claude/**',
         ...ignores,
@@ -61,6 +62,10 @@ export function createConfig({ tsconfigRootDir, ignores = [] }) {
       rules: {
         '@typescript-eslint/no-non-null-assertion': 'off',
         '@typescript-eslint/unbound-method': 'off',
+        // Supertest response bodies are untyped (`any`) by design; asserting on them is the point.
+        '@typescript-eslint/no-unsafe-assignment': 'off',
+        '@typescript-eslint/no-unsafe-member-access': 'off',
+        '@typescript-eslint/no-unsafe-argument': 'off',
       },
     },
     ...boundariesConfig,

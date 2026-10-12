@@ -1,6 +1,12 @@
 /**
- * @attendra/contracts — the single source of truth for API shapes (BACKEND.md §5).
- * Schemas, enums and ts-rest routers are added per feature, starting in milestone A1.
+ * @attendra/contracts — the single source of truth for API shapes (BACKEND.md §5,
+ * ADR-0014). Depends only on Zod.
  */
 export const API_VERSION = 'v1' as const;
 export type ApiVersion = typeof API_VERSION;
+
+export * from './errors';
+export * from './common/problem';
+export * from './common/primitives';
+export * from './http/route';
+export * from './routes';

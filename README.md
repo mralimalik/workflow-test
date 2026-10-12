@@ -130,6 +130,7 @@ pnpm dev                 # api on :4000 + worker, rebuilding on change
 | `pnpm build` | builds all packages and apps (Turborepo, cached) |
 | `pnpm db:generate` | generates a migration from Drizzle schema changes (review the SQL) |
 | `pnpm db:reset` | drops and re-migrates the **local** database (refuses elsewhere) |
+| `pnpm api:client` | regenerates `packages/api-client` (OpenAPI from the route registry → typed client); CI fails if stale |
 | `pnpm api:scenarios` | runs API scenarios against a running API → `reports/api-scenarios/<timestamp>.md` |
 
 Manual requests: `apps/api/http/*.http` (VS Code REST Client / JetBrains HTTP Client).

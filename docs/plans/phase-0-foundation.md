@@ -5,7 +5,7 @@
 | Goal | A secure, multi-tenant platform skeleton — auth, businesses, locations, opening hours, team and access, admin basics — fully tested, on which every later feature is built |
 | Order | **Part A: backend** (complete and verified) → **Part B: dashboard + admin UI** (starts after design references are shared and the design system is approved) |
 | Specs | [roadmap §Phase 0](../product/roadmap.md#phase-0--foundation), [ARCHITECTURE.md](../../ARCHITECTURE.md), [BACKEND.md](../../BACKEND.md), [FRONTEND.md](../../FRONTEND.md), feature docs linked per milestone |
-| Status | In progress — A0 |
+| Status | In progress — A2 |
 
 Library versions and features reviewed for this phase: [stack-review-2026-10.md](stack-review-2026-10.md).
 
@@ -110,14 +110,15 @@ are merged in order; each one is a reviewable PR.
   (non-production), registry ↔ mounted-routes conformance test.
 - `kernel/ids`: UUIDv7, reference codes (Crockford base32, no ambiguous chars).
 - `kernel/time`: `Clock` injection, timezone helpers (Temporal polyfill).
-- Health endpoints `/internal/health/live`, `/internal/health/ready`.
+- Health endpoints `/internal/health/live`, `/internal/health/ready` (readiness checks are
+  contributed by modules: Postgres in A2, Redis in A3).
 - Security middleware: helmet, CORS allowlists per audience, body limits, cookie parser.
 - OpenTelemetry SDK bootstrap (console/OTLP exporter; no backend required locally).
 
 **Done when**
-- [ ] Unknown error → `500 internal_error` with `requestId`; validation error → `422` with `errors[].path`.
-- [ ] Every log line has `requestId`; secrets/PII redacted (unit tests on the redactor).
-- [ ] `/docs` shows the generated OpenAPI; contract types compile in a client test.
+- [x] Unknown error → `500 internal_error` with `requestId`; validation error → `422` with `errors[].path`.
+- [x] Every log line has `requestId`; secrets/PII redacted (unit tests on the redactor).
+- [x] `/docs` shows the generated OpenAPI; contract types compile in a client test.
 
 ### A2 · Database foundation
 
@@ -359,7 +360,7 @@ Plus visual checks (light/dark, one RTL locale) and axe accessibility checks on 
 | Milestone | Status |
 |---|---|
 | A0 Repository and tooling | ✅ |
-| A1 Backend kernel | ☐ |
+| A1 Backend kernel | ✅ |
 | A2 Database foundation | ☐ |
 | A3 Platform modules | ☐ |
 | A4 User authentication | ☐ |
