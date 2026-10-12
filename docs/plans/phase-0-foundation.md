@@ -5,7 +5,7 @@
 | Goal | A secure, multi-tenant platform skeleton — auth, businesses, locations, opening hours, team and access, admin basics — fully tested, on which every later feature is built |
 | Order | **Part A: backend** (complete and verified) → **Part B: dashboard + admin UI** (starts after design references are shared and the design system is approved) |
 | Specs | [roadmap §Phase 0](../product/roadmap.md#phase-0--foundation), [ARCHITECTURE.md](../../ARCHITECTURE.md), [BACKEND.md](../../BACKEND.md), [FRONTEND.md](../../FRONTEND.md), feature docs linked per milestone |
-| Status | In progress — A5 |
+| Status | In progress — A6 |
 
 Library versions and features reviewed for this phase: [stack-review-2026-10.md](stack-review-2026-10.md).
 
@@ -211,15 +211,22 @@ are merged in order; each one is a reviewable PR.
 `feature_flags`, `feature_flag_overrides`.
 - Separate realm (`att_a` cookie, `/auth/admins/*`), **mandatory TOTP** on first login.
 - CLI: `pnpm admin:create --email --role super_admin` (only way to create the first admin).
-- Admin endpoints: admins CRUD, organizations list/detail/suspend/reactivate, users
-  search, ban/unban + revoke sessions, feature flags + overrides, audit log search,
-  plans read.
-- Admin role guard (`super_admin`, `support`, `billing`, `read_only`).
+- Admin endpoints: admins CRUD (invite by email), users search, ban/unban + revoke
+  sessions, feature flags + overrides, audit log search.
+- Admin role guard (`super_admin`, `support`, `billing`, `read_only`), declared per route
+  in the contract (`adminRoles`).
+- Moved to A6, because they need the `organizations` and `plans` tables built there:
+  admin organizations list/detail/suspend/reactivate, plans read, and the
+  `organization_suspended` check.
 
 **Done when**
-- [ ] A user session is rejected on `/admin/*` and vice versa (realm isolation test).
-- [ ] Ban → user's sessions revoked immediately; audit rows written for every admin action.
-- [ ] Suspended organization: business endpoints return `403 organization_suspended` (reads allowed per rules).
+- [x] A user session is rejected on `/admin/*` and vice versa (realm isolation test,
+  `apps/api/test/admin.e2e.test.ts`).
+- [x] Ban → user's sessions revoked immediately; audit rows written for every admin action
+  (admins, bans, session revocation, feature flags and overrides).
+- [x] TOTP mandatory: admin endpoints refuse the session (`403 mfa_enrollment_required`)
+  until TOTP is set up; admins cannot disable it.
+- Suspended organization → `403 organization_suspended`: moved to A6 (see above).
 
 ### A6 · Organizations
 
@@ -233,9 +240,12 @@ are merged in order; each one is a reviewable PR.
   `SettingsResolver` (platform → plan → org → location → capability), caching + invalidation.
 - Onboarding state endpoints (wizard progress).
 - Organization status effects (active / restricted / suspended / closed) enforced by a guard.
+- From A5: admin endpoints for organizations (list/detail/suspend/reactivate) and plans
+  (read).
 
 **Done when**
 - [ ] Unit: settings resolution covers every layer and locked keys.
+- [ ] Suspended organization: business endpoints return `403 organization_suspended` (reads allowed per rules).
 - [ ] API e2e: create org → creator is owner → org listed in `/orgs`; second user cannot see it.
 - [ ] `If-Match` mismatch on settings update → `412`.
 
@@ -376,7 +386,7 @@ Plus visual checks (light/dark, one RTL locale) and axe accessibility checks on 
 | A2 Database foundation | ✅ |
 | A3 Platform modules | ✅ |
 | A4 User authentication | ✅ |
-| A5 Platform admins | ☐ |
+| A5 Platform admins | ✅ |
 | A6 Organizations | ☐ |
 | A7 Locations and opening hours | ☐ |
 | A8 Team and access | ☐ |

@@ -146,8 +146,11 @@ POST /auth/users/mfa/verify  { mfaToken, code } | { mfaToken, recoveryCode }
 | GET · PATCH | `/auth/users/account` | user | Own profile: name, phone, locale, timezone, avatar |
 | POST | `/auth/users/account/avatar` | user | Signed upload URL for a new avatar |
 
-The users realm is implemented (A4); exact shapes are in `packages/contracts`
-(`routes.userAuth`, `routes.account`) and the generated OpenAPI document. The own-profile
+The users realm (A4) and the admins realm (A5: login, MFA, session, sessions, password
+forgot/reset/change, TOTP enrol/confirm — no signup, no TOTP disable) are implemented;
+exact shapes are in `packages/contracts` (`routes.userAuth`, `routes.adminAuth`,
+`routes.account`) and the generated OpenAPI document. Admin reset and invitation links
+point at the admin app (`ADMIN_URL`). The own-profile
 endpoints live under `/auth/users/` because `/v1/me` is the customer audience.
 
 ## Events and jobs

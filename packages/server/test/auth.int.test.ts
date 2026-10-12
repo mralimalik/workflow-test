@@ -53,6 +53,7 @@ async function newUser(): Promise<AuthSubject> {
     status: 'active',
     sessionVersion: 1,
     mfaRequired: false,
+    role: null,
   };
 }
 

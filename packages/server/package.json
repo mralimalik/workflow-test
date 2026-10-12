@@ -2,7 +2,7 @@
   "name": "@attendra/server",
   "version": "0.0.0",
   "private": true,
-  "description": "Backend modules, kernel and composition roots shared by the api, worker and media apps (BACKEND.md §2)",
+  "description": "Backend modules, kernel and composition roots shared by the api, worker and media apps (BACKEND.md \u00a72)",
   "exports": {
     "./*": {
       "types": "./dist/*.d.ts",
@@ -17,7 +17,8 @@
     "db:migrate": "node --env-file-if-exists=../../.env --import tsx scripts/db-migrate.ts",
     "db:seed": "node --env-file-if-exists=../../.env --import tsx scripts/db-seed.ts",
     "db:reset": "node --env-file-if-exists=../../.env --import tsx scripts/db-reset.ts",
-    "db:check-rls": "node --env-file-if-exists=../../.env --import tsx scripts/db-check-rls.ts"
+    "db:check-rls": "node --env-file-if-exists=../../.env --import tsx scripts/db-check-rls.ts",
+    "admin:create": "tsc -b tsconfig.build.json && node --env-file-if-exists=../../.env --import tsx scripts/admin-create.ts"
   },
   "dependencies": {
     "@attendra/contracts": "workspace:*",

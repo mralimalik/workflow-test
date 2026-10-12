@@ -43,6 +43,10 @@ export const ERROR_CODES = {
   email_taken: { status: 409, title: 'An account with this email already exists' },
   mfa_already_enabled: { status: 409, title: 'Two-factor authentication is already enabled' },
   mfa_not_enabled: { status: 409, title: 'Two-factor authentication is not enabled' },
+  last_super_admin: {
+    status: 409,
+    title: 'At least one active super admin must remain',
+  },
   // Providers
   provider_unavailable: { status: 502, title: 'An upstream provider is unavailable' },
 } as const satisfies Record<string, { status: number; title: string }>;

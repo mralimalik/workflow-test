@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
-import { and, eq, isNull, sql } from 'drizzle-orm';
+import { and, desc, eq, ilike, isNull, lt, or, sql } from 'drizzle-orm';
 
 import type { Tx } from '../../../kernel/db/database';
 import { mapDbError } from '../../../kernel/db/db-errors';
 import { newId } from '../../../kernel/ids/ids';
-import { users, type UserRow } from '../infrastructure/users.schema';
+import { users, type UserRow, type UserStatus } from '../infrastructure/users.schema';
 
 export interface NewUser {
   email: string;
@@ -87,6 +87,65 @@ export class UsersService {
 
   async updateProfile(tx: Tx, id: string, changes: ProfileChanges): Promise<UserRow> {
     const [row] = await tx.update(users).set(changes).where(eq(users.id, id)).returning();
+    if (!row) throw new Error(`User ${id} not found`);
+    return row;
+  }
+
+  /**
+   * Admin search: `q` matches email or name (case-insensitive substring), newest first,
+   * keyset on (created_at, id).
+   */
+  async search(
+    tx: Tx,
+    filter: {
+      q?: string | undefined;
+      status?: UserStatus | undefined;
+      limit: number;
+      after?: { createdAt: Date; id: string } | undefined;
+    },
+  ): Promise<UserRow[]> {
+    const pattern = filter.q ? `%${filter.q.replace(/[\\%_]/g, (c) => `\\${c}`)}%` : undefined;
+    const after = filter.after;
+    return tx
+      .select()
+      .from(users)
+      .where(
+        and(
+          pattern
+            ? or(
+                ilike(users.email, pattern),
+                ilike(sql`${users.firstName} || ' ' || coalesce(${users.lastName}, '')`, pattern),
+              )
+            : undefined,
+          filter.status ? eq(users.status, filter.status) : undefined,
+          after
+            ? or(
+                lt(users.createdAt, after.createdAt),
+                and(eq(users.createdAt, after.createdAt), lt(users.id, after.id)),
+              )
+            : undefined,
+        ),
+      )
+      .orderBy(desc(users.createdAt), desc(users.id))
+      .limit(filter.limit);
+  }
+
+  /** Ban or lift a ban (FR-AUTH-006); callers revoke sessions in the same transaction. */
+  async setBan(tx: Tx, id: string, ban: { reason: string; at: Date } | null): Promise<UserRow> {
+    const [row] = await tx
+      .update(users)
+      .set(
+        ban
+          ? {
+              status: 'banned',
+              bannedAt: ban.at,
+              banReason: ban.reason,
+              sessionVersion: sql`${users.sessionVersion} + 1`,
+            }
+          : { status: 'active', bannedAt: null, banReason: null },
+      )
+      .where(eq(users.id, id))
+      .returning();
     if (!row) throw new Error(`User ${id} not found`);
     return row;
   }

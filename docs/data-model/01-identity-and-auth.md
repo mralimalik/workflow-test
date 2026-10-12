@@ -32,6 +32,10 @@ Attendra staff. Never members of organizations. **[base]**
 | `session_version` | integer | no | `1` | bump to invalidate all tokens ([BACKEND §6.2](../../BACKEND.md#62-revocation-and-bans)) |
 | `last_login_at` | timestamptz | yes | | |
 
+Constraints: UNIQUE `email`; role and status CHECKs; `CHECK (mfa_enforced)`. Created only by
+the `admin:create` CLI or a super admin; the initial `password_hash` is a hash of a random
+value that nobody knows, replaced when the invitee sets a password through the link.
+
 ## users
 
 Business-side people who log in to the dashboard. Global: one user may belong to many

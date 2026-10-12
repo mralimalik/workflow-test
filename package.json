@@ -26,7 +26,8 @@
     "db:reset": "pnpm --filter @attendra/server db:reset",
     "api:scenarios": "pnpm --filter @attendra/api scenarios",
     "api:client": "turbo run build --filter=@attendra/server... --output-logs=errors-only && pnpm --filter @attendra/api openapi:export && pnpm --filter @attendra/api-client generate && prettier --write packages/api-client/openapi.json --log-level warn",
-    "db:check-rls": "pnpm --filter @attendra/server db:check-rls"
+    "db:check-rls": "pnpm --filter @attendra/server db:check-rls",
+    "admin:create": "pnpm --filter @attendra/server admin:create"
   },
   "devDependencies": {
     "@attendra/config": "workspace:*",

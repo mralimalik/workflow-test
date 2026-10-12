@@ -3,6 +3,7 @@ import { Module } from '@nestjs/common';
 import { AuditModule } from '../modules/audit/audit.public';
 import { AuthWorkerModule } from '../modules/auth/auth.public';
 import { UsersModule } from '../modules/users/users.public';
+import { PlatformAdminsModule } from '../modules/platform-admins/platform-admins.public';
 import { FilesModule } from '../modules/files/files.public';
 import { RealtimePublisherModule } from '../modules/realtime/realtime.public';
 import {
@@ -50,6 +51,7 @@ export class WorkerModule {
         InboundWebhooksWorkerModule,
         FilesModule,
         UsersModule,
+        PlatformAdminsModule,
         AuthWorkerModule,
         MaintenanceModule,
       ],

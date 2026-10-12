@@ -57,8 +57,12 @@ export class AuthGuard implements CanActivate {
         throw new ForbiddenError('csrf_token_invalid');
       }
     }
-    if (route.audience === 'business' && session.mfaPending) {
+    // A required second factor must be set up before business or admin endpoints work.
+    if ((route.audience === 'business' || route.audience === 'admin') && session.mfaPending) {
       throw new AppError('mfa_enrollment_required');
+    }
+    if (route.adminRoles && !allowedRole(route.adminRoles, session.role)) {
+      throw new ForbiddenError('forbidden', 'Your admin role does not allow this action');
     }
 
     req[SESSION] = session;
@@ -73,3 +77,8 @@ export const CurrentSession = createParamDecorator((_: unknown, ctx: ExecutionCo
   if (!session) throw new Error('@CurrentSession() used on a route without authentication');
   return session;
 });
+
+/** `super_admin` may do everything; other roles only what the route lists. */
+function allowedRole(allowed: readonly string[], role: string | null): boolean {
+  return role === 'super_admin' || (role !== null && allowed.includes(role));
+}

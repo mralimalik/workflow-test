@@ -21,10 +21,10 @@ export interface UserClient {
   password: string;
 }
 
-/** The `att_u=…` pair from a response's Set-Cookie, or undefined. */
-export function sessionCookie(res: Response): string | undefined {
+/** The `att_u=…` (or another realm's) pair from a response's Set-Cookie, or undefined. */
+export function sessionCookie(res: Response, name = 'att_u'): string | undefined {
   const raw = res.headers['set-cookie'] as unknown as string[] | undefined;
-  return raw?.find((c) => c.startsWith('att_u='))?.split(';')[0];
+  return raw?.find((c) => c.startsWith(`${name}=`))?.split(';')[0];
 }
 
 export function uniqueEmail(tag = 'user'): string {

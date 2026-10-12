@@ -12,6 +12,8 @@ export const cachedSessionSchema = z.object({
   realm: z.enum(REALMS),
   subjectId: z.string(),
   subjectVersion: z.int(),
+  /** Admin role at load time; role changes refresh the subject's cached sessions. */
+  role: z.string().nullable(),
   csrfToken: z.string(),
   authMethod: z.enum(SESSION_AUTH_METHODS),
   mfaVerifiedAt: z.iso.datetime().nullable(),

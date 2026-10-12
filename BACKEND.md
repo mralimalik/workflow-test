@@ -137,6 +137,7 @@ modules/bookings/
 | `auth` | `sessions`, `refresh_tokens`, `auth_challenges`, `mfa_factors`, `oauth_accounts` | `SessionService`, `ChallengeService` |
 | `users` | `users` | `UsersService` |
 | `platform-admins` | `platform_admins`, `impersonation_sessions` | `PlatformAdminsService` |
+| `admin` | — (admin console API; orchestrates the modules below through their public APIs) | — |
 | `organizations` | `organizations` | `OrganizationsService`, `SettingsResolver` |
 | `locations` | `locations`, `location_capabilities` | `LocationsService` |
 | `access` | `roles`, `memberships`, `membership_locations`, `invitations` | `AccessService` (permission checks) |
@@ -372,7 +373,11 @@ to the session (synchronizer token, delivered by `GET /v1/auth/{realm}/session`)
 ### 6.4 Authorization model
 
 - **Platform admins:** role-based (`super_admin`, `support`, `billing`, `read_only`) with
-  per-endpoint requirements.
+  per-endpoint requirements: each admin route lists its roles in the contract
+  (`adminRoles`; `super_admin` is always allowed) and the auth guard checks the role held
+  in the session (role changes refresh the admin's cached sessions). Admin and business
+  endpoints refuse a session whose subject must use TOTP but has not set it up
+  (`403 mfa_enrollment_required`); admins always must.
 - **Users:** permission strings (`resource.action`, e.g. `bookings.update`) granted by the
   membership's role, constrained by its location scope. The catalogue of permissions and
   system roles is in [features/organizations-and-access.md](docs/features/organizations-and-access.md#permission-catalogue).
@@ -647,6 +652,9 @@ Sliding-window counters per policy:
 | `notification.status_changed` | notifications | realtime (message status) |
 | `user.signed_up`, `user.email_verification_requested`, `auth.password_reset_requested`, `auth.login_succeeded` | auth | auth-notifications (verification / reset / new-device emails) |
 | `user.email_verified`, `auth.password_changed`, `auth.mfa_changed`, `session.revoked` | auth | audit trail today; consumers later (e.g. security notices) |
+| `platform_admin.invited` | admin | auth-notifications (invitation email) |
+| `subject.banned`, `subject.unbanned` | admin | consumers later (e.g. customer-facing notices) |
+| `feature_flag.changed` | feature-flags | cache (feature-flags) |
 
 ### 10.3 Queues and jobs
 

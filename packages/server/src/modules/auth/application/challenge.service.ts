@@ -42,9 +42,11 @@ export class ChallengeService {
       subjectId: string;
       destination: string;
       context?: Record<string, unknown>;
+      /** Overrides the purpose's default lifetime (e.g. admin invitations: 72 h). */
+      ttlMs?: number;
     },
   ): Promise<{ token: string; challenge: ChallengeRow }> {
-    const ttl = LINK_TTL_MS[input.purpose];
+    const ttl = input.ttlMs ?? LINK_TTL_MS[input.purpose];
     if (!ttl) throw new Error(`No link lifetime for ${input.purpose}`);
     const token = randomToken();
     const challenge = await this.repository.insert(tx, {

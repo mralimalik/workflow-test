@@ -132,5 +132,6 @@ pnpm dev                 # api on :4000 + worker, rebuilding on change
 | `pnpm db:reset` | drops and re-migrates the **local** database (refuses elsewhere) |
 | `pnpm api:client` | regenerates `packages/api-client` (OpenAPI from the route registry → typed client); CI fails if stale |
 | `pnpm api:scenarios` | runs API scenarios against a running API → `reports/api-scenarios/<timestamp>.md` |
+| `pnpm admin:create --email <e> --name <n> [--role super_admin]` | creates a platform admin and prints a one-time set-password link (72 h); the only way to create the first admin |
 
 Manual requests: `apps/api/http/*.http` (VS Code REST Client / JetBrains HTTP Client).

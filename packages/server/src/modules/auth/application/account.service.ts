@@ -1,10 +1,11 @@
-import type { CurrentUser, UserSession } from '@attendra/contracts';
+import type { AdminSession, CurrentUser, UserSession } from '@attendra/contracts';
 import { Injectable } from '@nestjs/common';
 
 import { Database, type Tx } from '../../../kernel/db/database';
 import { AppError, NotFoundError, UnauthenticatedError } from '../../../kernel/errors/app-error';
 import { AuditService } from '../../audit/audit.public';
 import { FilesService, type SignedUrl } from '../../files/files.public';
+import { PlatformAdminsService } from '../../platform-admins/platform-admins.public';
 import { UsersService, type ProfileChanges, type UserRow } from '../../users/users.public';
 import { MfaService } from './mfa.service';
 import type { ActiveSession } from './session.service';
@@ -18,6 +19,7 @@ export class AccountService {
   constructor(
     private readonly db: Database,
     private readonly users: UsersService,
+    private readonly admins: PlatformAdminsService,
     private readonly mfa: MfaService,
     private readonly files: FilesService,
     private readonly audit: AuditService,
@@ -34,19 +36,26 @@ export class AccountService {
     const current = await this.db.transaction((tx) =>
       this.currentUser(tx, user ?? session.subjectId),
     );
-    return {
-      user: current,
-      session: {
-        id: session.id,
-        authMethod: session.authMethod,
-        mfaVerified: session.mfaVerifiedAt !== null,
-        createdAt: session.createdAt,
-        idleExpiresAt: session.idleExpiresAt,
-        absoluteExpiresAt: session.absoluteExpiresAt,
-      },
-      csrfToken: session.csrfToken,
-      mfaEnrollmentRequired: session.mfaPending,
-    };
+    return { user: current, ...sessionParts(session) };
+  }
+
+  /** The admin console's bootstrap document. */
+  async adminSessionDocument(session: ActiveSession): Promise<AdminSession> {
+    return this.db.transaction(async (tx) => {
+      const admin = await this.admins.findById(tx, session.subjectId);
+      if (!admin) throw new UnauthenticatedError();
+      return {
+        admin: {
+          id: admin.id,
+          email: admin.email,
+          name: admin.name,
+          role: admin.role,
+          mfaEnabled: await this.mfa.isEnabled(tx, 'platform_admin', admin.id),
+          createdAt: admin.createdAt.toISOString(),
+        },
+        ...sessionParts(session),
+      };
+    });
   }
 
   async get(userId: string): Promise<CurrentUser> {
@@ -106,6 +115,21 @@ export class AccountService {
       ? this.files.downloadUrl({ id: user.avatarFileId, organizationId: null, status: 'ready' })
       : null;
   }
+}
+
+function sessionParts(session: ActiveSession) {
+  return {
+    session: {
+      id: session.id,
+      authMethod: session.authMethod,
+      mfaVerified: session.mfaVerifiedAt !== null,
+      createdAt: session.createdAt,
+      idleExpiresAt: session.idleExpiresAt,
+      absoluteExpiresAt: session.absoluteExpiresAt,
+    },
+    csrfToken: session.csrfToken,
+    mfaEnrollmentRequired: session.mfaPending,
+  };
 }
 
 function toCurrentUser(user: UserRow, mfaEnabled: boolean, avatar: SignedUrl | null): CurrentUser {

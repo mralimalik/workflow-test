@@ -5,3 +5,4 @@ export { MfaService } from './application/mfa.service';
 export { SessionSocketAuthenticator } from './application/session-socket-authenticator';
 export { CurrentSession, CSRF_HEADER } from './api/auth.guard';
 export { REALM_POLICY } from './domain/realm-policy';
+export { PasswordHasher } from './application/password-hasher';

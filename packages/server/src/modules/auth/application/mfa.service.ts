@@ -40,6 +40,14 @@ export class MfaService {
     return (await this.repository.findActive(tx, subjectType, subjectId, 'totp')) !== null;
   }
 
+  async enabledAmong(
+    tx: Tx,
+    subjectType: MfaSubjectType,
+    subjectIds: readonly string[],
+  ): Promise<Set<string>> {
+    return this.repository.withActiveTotp(tx, subjectType, subjectIds);
+  }
+
   /** Starts enrolment: replaces any pending factor and returns the new secret. */
   async enroll(
     tx: Tx,

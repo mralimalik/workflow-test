@@ -27,6 +27,10 @@ export type Realm = (typeof REALMS)[number];
  */
 export type AuthRequirement = 'none' | Realm;
 
+/** Platform admin roles (FR-ADM-007, features/super-admin.md). */
+export const ADMIN_ROLES = ['super_admin', 'support', 'billing', 'read_only'] as const;
+export type AdminRole = (typeof ADMIN_ROLES)[number];
+
 export function routeAuth(route: Pick<RouteDefinition, 'auth' | 'audience'>): AuthRequirement {
   if (route.auth) return route.auth;
   switch (route.audience) {
@@ -86,6 +90,11 @@ export interface RouteDefinition {
   readonly versioned?: boolean;
   /** Required authentication; see {@link routeAuth} for the audience defaults. */
   readonly auth?: AuthRequirement;
+  /**
+   * Admin audience: roles allowed to call the route (`super_admin` is always allowed).
+   * Required on every admin route.
+   */
+  readonly adminRoles?: readonly AdminRole[];
   /** Extra rate-limit policy for this route, on top of `default`. */
   readonly rateLimit?: RateLimitPolicyName;
   /** Excluded from published documentation (still type-checked and conformance-tested). */

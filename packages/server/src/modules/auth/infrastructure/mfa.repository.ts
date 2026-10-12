@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { and, desc, eq, isNotNull, isNull, lt, or } from 'drizzle-orm';
+import { and, desc, eq, inArray, isNotNull, isNull, lt, or } from 'drizzle-orm';
 
 import type { Tx } from '../../../kernel/db/database';
 import { mfaFactors, type MfaFactorRow } from './auth.schema';
@@ -36,6 +36,27 @@ export class MfaRepository {
       );
     const [row] = options.forUpdate ? await query.for('update') : await query;
     return row ?? null;
+  }
+
+  /** Which of these subjects have an active TOTP factor (one query for list pages). */
+  async withActiveTotp(
+    tx: Tx,
+    subjectType: MfaSubjectType,
+    subjectIds: readonly string[],
+  ): Promise<Set<string>> {
+    if (subjectIds.length === 0) return new Set();
+    const rows = await tx
+      .select({ subjectId: mfaFactors.subjectId })
+      .from(mfaFactors)
+      .where(
+        and(
+          eq(mfaFactors.subjectType, subjectType),
+          inArray(mfaFactors.subjectId, [...subjectIds]),
+          eq(mfaFactors.type, 'totp'),
+          isNotNull(mfaFactors.verifiedAt),
+        ),
+      );
+    return new Set(rows.map((r) => r.subjectId));
   }
 
   /** The newest TOTP factor awaiting confirmation. */

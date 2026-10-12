@@ -79,3 +79,25 @@ export const mfaChanged = defineEvent({
   aggregate: 'auth_subject',
   data: z.object({ ...subject, enabled: z.boolean() }),
 });
+
+export const subjectBanned = defineEvent({
+  type: 'subject.banned',
+  version: 1,
+  aggregate: 'auth_subject',
+  data: z.object({ ...subject, reason: z.string() }),
+});
+
+export const subjectUnbanned = defineEvent({
+  type: 'subject.unbanned',
+  version: 1,
+  aggregate: 'auth_subject',
+  data: z.object(subject),
+});
+
+/** A platform admin was created and must set a password (invitation email). */
+export const platformAdminInvited = defineEvent({
+  type: 'platform_admin.invited',
+  version: 1,
+  aggregate: 'platform_admin',
+  data: z.object({ adminId: z.uuid() }),
+});

@@ -8,6 +8,7 @@ export type ApiVersion = typeof API_VERSION;
 export * from './errors';
 export * from './common/problem';
 export * from './common/primitives';
+export * from './common/pagination';
 export * from './http/route';
 export * from './routes';
 export * from './events';

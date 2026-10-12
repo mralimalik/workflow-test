@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { APP_GUARD } from '@nestjs/core';
 
 import { AccountController } from './api/account.controller';
+import { AdminAuthController } from './api/admin-auth.controller';
 import { AuthGuard } from './api/auth.guard';
 import { SessionCookies } from './api/session-cookies';
 import { UserAuthController } from './api/user-auth.controller';
@@ -18,7 +19,8 @@ import { SessionService } from './application/session.service';
 import { SessionSocketAuthenticator } from './application/session-socket-authenticator';
 import { Subjects } from './application/subjects';
 import { UserAuthService } from './application/user-auth.service';
-import { UserMfaService } from './application/user-mfa.service';
+import { MfaSelfService } from './application/mfa-self-service';
+import { PasswordAuthService } from './application/password-auth.service';
 import { AuthNotificationsHandler } from './events/auth-notifications.handler';
 import { ChallengesRepository } from './infrastructure/challenges.repository';
 import { MfaRepository } from './infrastructure/mfa.repository';
@@ -59,10 +61,11 @@ export class AuthCoreModule {}
  */
 @Module({
   imports: [AuthCoreModule],
-  controllers: [UserAuthController, AccountController],
+  controllers: [UserAuthController, AdminAuthController, AccountController],
   providers: [
+    PasswordAuthService,
     UserAuthService,
-    UserMfaService,
+    MfaSelfService,
     AccountService,
     LoginAttempts,
     MfaLoginTokens,

@@ -77,7 +77,7 @@ export class SessionService {
       ...initialExpiry(input.subject.realm, now),
     });
     const mfaPending = await this.mfaPending(tx, input.subject);
-    return { token, row, session: this.toActive(row, mfaPending) };
+    return { token, row, session: this.toActive(row, mfaPending, input.subject.role) };
   }
 
   /**
@@ -199,7 +199,7 @@ export class SessionService {
         );
         return null;
       }
-      return this.toActive(row, await this.mfaPending(tx, subject));
+      return this.toActive(row, await this.mfaPending(tx, subject), subject.role);
     });
     if (session) await this.writeCache(session, now);
     return session;
@@ -220,13 +220,14 @@ export class SessionService {
     return totp === null;
   }
 
-  private toActive(row: SessionRow, mfaPending: boolean): ActiveSession {
+  private toActive(row: SessionRow, mfaPending: boolean, role: string | null): ActiveSession {
     return {
       id: row.id,
       tokenHash: row.tokenHash.toString('hex'),
       realm: row.subjectType,
       subjectId: row.subjectId,
       subjectVersion: row.subjectVersion,
+      role,
       csrfToken: (row.csrfSecret ?? Buffer.alloc(0)).toString('base64url'),
       authMethod: row.authMethod,
       mfaVerifiedAt: row.mfaVerifiedAt?.toISOString() ?? null,

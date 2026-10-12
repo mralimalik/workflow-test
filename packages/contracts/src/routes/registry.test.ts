@@ -35,5 +35,7 @@ describe('route registry invariants (ADR-0014, BACKEND.md §5)', () => {
       expect(['POST', 'PUT', 'PATCH']).toContain(route.method);
     // Auth endpoints say explicitly who may call them; other audiences have defaults.
     if (route.audience === 'auth') expect(route.auth).toBeDefined();
+    // Admin routes say which roles may call them.
+    expect(route.adminRoles !== undefined).toBe(route.audience === 'admin');
   });
 });

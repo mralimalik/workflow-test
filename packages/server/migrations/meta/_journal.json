@@ -64,6 +64,13 @@
       "when": 1791792728111,
       "tag": "0008_users_and_auth",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1791794820121,
+      "tag": "0009_platform_admins",
+      "breakpoints": true
     }
   ]
 }

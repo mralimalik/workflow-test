@@ -38,6 +38,14 @@ export const PLATFORM_TEMPLATES = [
     ),
   },
   {
+    eventKey: 'auth.admin_invitation',
+    subject: 'You have been added to the Attendra admin console',
+    body: 'Hi {firstName},\n\nYou have been given access to the Attendra admin console. Set your password within 72 hours:\n{link}\n\nYou will set up two-factor authentication when you first sign in.',
+    htmlBody: layout(
+      `<h1 style="font-size:20px">Welcome to the admin console</h1><p>Hi {firstName}, you have been given access to the Attendra admin console. Set your password within 72 hours.</p>${button('Set your password')}<p style="font-size:12px;color:#6b7280">You will set up two-factor authentication when you first sign in.</p>`,
+    ),
+  },
+  {
     eventKey: 'team.invitation',
     subject: '{inviterName} invited you to {organizationName} on Attendra',
     body: '{inviterName} invited you to join {organizationName} on Attendra.\n\nAccept the invitation:\n{link}\n\nThe invitation expires in 7 days.',

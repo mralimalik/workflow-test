@@ -49,6 +49,14 @@ cases — safely and with a full audit trail.
    `super_admin` chooses `full`, and shows a banner to the admin.
 3. Suspending an organization requires a reason and notifies owners.
 4. Deleting provider credentials in use is blocked; disable first and reassign profiles.
+5. Admins are invited, never given a password: the first one by `pnpm admin:create`
+   (prints a set-password link), later ones by a super admin (`POST /admin/admins` emails a
+   link, valid 72 h). TOTP is set up at first sign-in and cannot be turned off.
+6. At least one active `super_admin` always remains: demoting or disabling the last one is
+   refused (`409 last_super_admin`). Disabling an admin signs them out everywhere.
+7. "support+" means `support` and `super_admin`; "read_only+" means every role.
+8. Banning requires a reason, bumps the user's `session_version`, revokes every session and
+   is audited (`user.banned`); the user then gets `403 account_disabled` at login.
 
 ## Data
 
@@ -63,14 +71,19 @@ cases — safely and with a full audit trail.
 
 ## API
 
-All under `/admin`, platform admin session with 2FA.
+All under `/v1/admin`, platform admin session with 2FA (`att_a`, `/v1/auth/admins/*`).
+"Role" lists who may call; `super_admin` may call everything. Roles are declared per route
+in the contract (`adminRoles`) and enforced by the auth guard; a role change applies on the
+admin's next request. Implemented in Phase 0 (A5): admins, users, feature flags, audit
+logs; organizations and plans arrive with A6.
 
 | Method | Path | Role |
 |---|---|---|
 | GET | `/admin/organizations?q=&status=&plan=` · `/admin/organizations/{id}` | read_only+ |
 | POST | `/admin/organizations/{id}/suspend` · `/reactivate` · `/grace-extension` | support+ |
 | GET | `/admin/users?q=` · `/admin/customers?q=` | support+ |
-| POST | `/admin/{realm}/{id}/ban` · `/unban` · `/revoke-sessions` | support+ |
+| GET | `/admin/users/{id}` (with active sessions) | support+ |
+| POST | `/admin/{realm}/{id}/ban` · `/unban` · `/revoke-sessions` (body: `reason`) | support+ |
 | POST | `/admin/impersonations` · DELETE `/admin/impersonations/{id}` | support+ (full: super_admin) |
 | GET · POST · PATCH · DELETE | `/admin/provider-credentials[/{id}]` | super_admin (read: read_only+) |
 | POST | `/admin/provider-credentials/{id}/verify` · `/rotate-secret` | super_admin |
@@ -80,17 +93,22 @@ All under `/admin`, platform admin session with 2FA.
 | POST | `/admin/plan-prices/{id}/supersede` | billing+ (price change + migration policy) |
 | GET · POST · PATCH | `/admin/coupons[/{id}]`, `/admin/promotion-codes[/{id}]` | billing+ |
 | GET · POST · DELETE | `/admin/organizations/{id}/entitlement-overrides` | billing+ |
-| GET · POST · PATCH | `/admin/feature-flags[/{id}]`, `/admin/feature-flags/{id}/overrides` | super_admin |
+| GET | `/admin/feature-flags`, `/admin/feature-flags/{id}/overrides` | read_only+ |
+| POST · PATCH | `/admin/feature-flags[/{id}]`; POST · DELETE `/admin/feature-flags/{id}/overrides[/{overrideId}]` | super_admin |
 | GET | `/admin/phone-numbers?status=` | support+ |
 | GET · PUT | `/admin/templates[/{key}]` (industry templates) | super_admin |
 | GET | `/admin/audit-logs?actor=&organizationId=&action=` | read_only+ |
 | GET | `/admin/health` · `/admin/usage?from=&to=` | read_only+ |
-| GET · POST · PATCH | `/admin/admins[/{id}]` | super_admin |
+| GET · POST · PATCH | `/admin/admins[/{id}]` (POST invites by email) | super_admin |
 
 ## Events and jobs
 
-Emits `model_profile.updated`, `profile_assignment.changed`, `feature_flag.updated`,
-`organization.suspended`, plan/price events consumed by billing sync.
+Emits `model_profile.updated`, `profile_assignment.changed`, `feature_flag.changed`
+(every flag or override change; invalidates the flag cache), `subject.banned` /
+`subject.unbanned`, `platform_admin.invited` (invitation email), `organization.suspended`,
+plan/price events consumed by billing sync. Audit actions: `platform_admin.created` /
+`.updated`, `user.banned` / `.unbanned` / `.sessions_revoked`, `feature_flag.created` /
+`.updated` / `.override_set` / `.override_removed`.
 
 ## Edge cases
 
