@@ -10,3 +10,4 @@ export * from './common/problem';
 export * from './common/primitives';
 export * from './http/route';
 export * from './routes';
+export * from './events';

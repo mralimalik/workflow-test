@@ -1,8 +1,15 @@
 import { Module } from '@nestjs/common';
 
+import { AuditModule } from '../modules/audit/audit.public';
+import { OutboxModule, OutboxRelayModule } from '../modules/outbox/outbox.public';
 import { CacheModule } from '../kernel/cache/cache.module';
 import { DatabaseModule } from '../kernel/db/database.module';
 import { KernelModule, type KernelOptions } from '../kernel/kernel.module';
+import {
+  MaintenanceProcessor,
+  MaintenanceSchedules,
+} from '../kernel/maintenance/partition-maintenance';
+import { QueueModule } from '../kernel/queue/queue.module';
 import { RedisModule } from '../kernel/redis/redis.module';
 
 /**
@@ -19,7 +26,12 @@ export class WorkerModule {
         DatabaseModule.forRoot({ statementTimeoutMs: 60_000, applicationName: 'attendra-worker' }),
         RedisModule,
         CacheModule,
+        QueueModule,
+        AuditModule,
+        OutboxModule,
+        OutboxRelayModule,
       ],
+      providers: [MaintenanceProcessor, MaintenanceSchedules],
     };
   }
 }

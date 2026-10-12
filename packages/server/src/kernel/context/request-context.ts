@@ -13,6 +13,9 @@ export interface RequestContextStore {
   actor?: Actor;
   organizationId?: string;
   locationId?: string;
+  /** Client network info for audit logs (never logged with request lines). */
+  ip?: string;
+  userAgent?: string;
   /** Background job context (worker). */
   jobId?: string;
   queue?: string;

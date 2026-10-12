@@ -603,7 +603,9 @@ Sliding-window counters per policy:
 - Named `<aggregate>.<past_tense_verb>`; payload schemas versioned in
   `packages/contracts/events` (`{ id, type, version, occurredAt, organizationId, locationId?, actor, data }`).
 - The **outbox relay** (worker) reads unpublished rows in order (`FOR UPDATE SKIP LOCKED`),
-  enqueues them to the subscribing queues, then marks them published. Woken by
+  enqueues one job per subscribed consumer on the `events` queue (job id
+  `{eventId}__{consumer}`, so redelivery is deduplicated), then marks them published.
+  Consumers are providers decorated with `@HandlesEvents({ consumer, events })`. Woken by
   `LISTEN/NOTIFY`; polls every second as a fallback.
 - Consumers are idempotent: they record processed event ids or rely on idempotent writes.
 
@@ -638,7 +640,7 @@ Sliding-window counters per policy:
 |---|---|---|---|
 | `outbox` | (relay loop, not a BullMQ queue) | NOTIFY / poll | single active leader via advisory lock |
 | `notifications` | `send` | events | per-provider concurrency limits; retries with backoff; respects suppression |
-| `reminders` | `booking-reminder` | `booking.confirmed/rescheduled` (delayed) | job id `reminder:{bookingId}:{offset}` → replace on reschedule |
+| `reminders` | `booking-reminder` | `booking.confirmed/rescheduled` (delayed) | job id `reminder__{bookingId}__{offset}` → replace on reschedule (BullMQ job ids cannot contain `:`) |
 | `holds` | `expire-hold`, `expire-draft-order` | delayed at creation | sweeper every minute as safety net |
 | `payments` | `expire-payment-link`, `reconcile` | delayed / repeatable | |
 | `calendar-sync` | `push-booking`, `pull-busy`, `renew-watch` | events / webhooks / repeatable | per-connection concurrency 1 (ordering) |

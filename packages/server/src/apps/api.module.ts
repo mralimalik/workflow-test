@@ -1,10 +1,13 @@
 import { Module } from '@nestjs/common';
 
+import { AuditModule } from '../modules/audit/audit.public';
+import { OutboxModule } from '../modules/outbox/outbox.public';
 import { CacheModule } from '../kernel/cache/cache.module';
 import { DatabaseModule } from '../kernel/db/database.module';
 import { HealthModule } from '../kernel/health/health.module';
 import { KernelModule, type KernelOptions } from '../kernel/kernel.module';
 import { RateLimitModule } from '../kernel/rate-limit/rate-limit.module';
+import { QueueModule } from '../kernel/queue/queue.module';
 import { RedisModule } from '../kernel/redis/redis.module';
 
 /**
@@ -21,6 +24,9 @@ export class ApiModule {
         DatabaseModule.forRoot({ statementTimeoutMs: 5_000, applicationName: 'attendra-api' }),
         RedisModule,
         CacheModule,
+        QueueModule,
+        AuditModule,
+        OutboxModule,
         RateLimitModule,
         HealthModule,
       ],

@@ -16,6 +16,14 @@ export const ERROR_CODES = {
   version_mismatch: { status: 412, title: 'The resource has changed; reload and retry' },
   precondition_required: { status: 428, title: 'An If-Match header is required' },
   rate_limited: { status: 429, title: 'Too many requests' },
+  idempotency_key_reused: {
+    status: 422,
+    title: 'This Idempotency-Key was already used with a different request',
+  },
+  request_in_progress: {
+    status: 409,
+    title: 'A request with this Idempotency-Key is still in progress',
+  },
   service_unavailable: { status: 503, title: 'The service is temporarily unavailable' },
   // Auth and access
   unauthenticated: { status: 401, title: 'Authentication is required' },

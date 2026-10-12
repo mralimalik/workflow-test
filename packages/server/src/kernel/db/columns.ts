@@ -1,5 +1,13 @@
 import { sql } from 'drizzle-orm';
-import { bigint, integer, text, timestamp, uuid, type PgColumn } from 'drizzle-orm/pg-core';
+import {
+  bigint,
+  customType,
+  integer,
+  text,
+  timestamp,
+  uuid,
+  type PgColumn,
+} from 'drizzle-orm/pg-core';
 
 import { newId } from '../ids/ids';
 
@@ -59,3 +67,8 @@ export const actorColumns = <V extends string>(verb: V) =>
 
 /** `now()` for SQL defaults/updates where a JS clock value is not appropriate. */
 export const sqlNow = sql`now()`;
+
+/** `bytea` (hashes, ciphertext). Drizzle 0.45 has no built-in bytea column. */
+export const bytea = customType<{ data: Buffer; driverData: Buffer }>({
+  dataType: () => 'bytea',
+});

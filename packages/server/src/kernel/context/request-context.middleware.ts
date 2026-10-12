@@ -14,5 +14,13 @@ export function requestContextMiddleware(req: Request, res: Response, next: Next
   const header = req.headers['x-request-id'];
   const requestId = typeof header === 'string' && VALID_REQUEST_ID.test(header) ? header : newId();
   res.setHeader('X-Request-Id', requestId);
-  RequestContext.run({ requestId }, next);
+  const userAgent = req.headers['user-agent'];
+  RequestContext.run(
+    {
+      requestId,
+      ...(req.ip ? { ip: req.ip } : {}),
+      ...(typeof userAgent === 'string' ? { userAgent: userAgent.slice(0, 512) } : {}),
+    },
+    next,
+  );
 }

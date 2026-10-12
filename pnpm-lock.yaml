@@ -301,6 +301,9 @@ importers:
       '@attendra/config':
         specifier: workspace:*
         version: link:../config
+      '@nestjs/testing':
+        specifier: 12.1.2
+        version: 12.1.2(@nestjs/common@12.1.2(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@12.1.2)(@nestjs/platform-express@12.1.2)
       '@types/compression':
         specifier: ^1.8.1
         version: 1.8.1
